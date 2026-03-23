@@ -1,4 +1,8 @@
-\section{Research Question}
+\section{Research Gap and Questions}
+
+The literature shows that SSR and CSR are extensively compared on speed-related metrics (such as TTI and LCP) and SEO outcomes. Resource-related metrics, including CPU and memory behavior on mobile client devices, are less often treated as the primary evaluation criterion. In addition, energy consumption is frequently discussed indirectly and rarely measured in direct relation to rendering strategy.
+
+This creates a clear research gap: there is limited controlled evidence comparing SSR and CSR with resource efficiency as the central focus in a mobile context.
 
 \textbf{Main question:}
 
@@ -14,7 +18,7 @@ How does the choice between server-side rendering (SSR) and client-side renderin
 	\item In which scenarios (page complexity, data volume, network conditions) does each rendering strategy demonstrate better resource efficiency on mobile devices?
 \end{enumerate}
 
-\subsection*{Hypothesis}
+\subsection*{Working Expectation}
 
 Based on the literature and technical analysis, I hypothesize that server-side rendering will on average be more resource-efficient on mobile devices compared to client-side rendering, particularly as data volumes increase. The primary reason for this is that with SSR, the largest part of the HTML is generated on the server, so the client only needs to parse and display it. With CSR, JavaScript must first be executed to dynamically generate HTML and place it in the DOM. Research by Clapton et al. (2025) demonstrates that this difference becomes increasingly pronounced with larger datasets (ranging from 498 KB to 26 MB), with JavaScript Heap usage increasing significantly for CSR as data size increases. Similarly, Gaddam (2025) reports that SSR implementations achieve 28.7\% reduction in memory consumption and 31.2\% reduction in CPU usage compared to CSR, particularly during the render phase.
 
