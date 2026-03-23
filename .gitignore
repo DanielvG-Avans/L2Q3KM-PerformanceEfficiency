@@ -1,6 +1,6 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# =========================================================
+# Dependencies / Package Managers
+# =========================================================
 /node_modules
 /.pnp
 .pnp.*
@@ -10,32 +10,77 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# =========================================================
+# Build Output / Caches
+# =========================================================
+# Next.js
 /.next/
 /out/
 
-# production
+# Generic builds
 /build
+/coverage
 
-# misc
-.DS_Store
-*.pem
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 
-# debug
+# =========================================================
+# Environment / Deployment
+# =========================================================
+.env*
+.vercel
+
+# =========================================================
+# Logs / Debug
+# =========================================================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# =========================================================
+# OS / Editor / Misc
+# =========================================================
+.DS_Store
+*.pem
+/temp
+*.tmp
+*.temp
+*.bak
+*~
+*.swp
+*.swo
 
-# vercel
-.vercel
+# =========================================================
+# LaTeX
+# =========================================================
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.xdv
+*.dvi
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# =========================================================
+# Images (kept tracked by default)
+# =========================================================
+!*.png
+!*.jpg
+!*.jpeg
+!*.svg
+!*.pdf
