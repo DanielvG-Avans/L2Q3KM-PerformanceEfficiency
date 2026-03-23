@@ -103,8 +103,7 @@
 % Mono: inconsolata for code listings
 \RequirePackage[scaled=0.88]{inconsolata}
 
-% Set sans-serif as the default document font family (matches Avans digital style)
-% Use TeX Gyre Pagella (serif) for body text for readability
+% Use TeX Gyre Pagella (serif) as the default document font family for body text readability
 \renewcommand{\familydefault}{\rmdefault}  % serif body by default
 
 % Micro-typography
@@ -132,6 +131,8 @@
 \definecolor{AvansRed}{HTML}{CF0A2C}        % Primary Red — punctuation and accents
 \definecolor{AvansBlack}{HTML}{1A1A1A}      % Near-black — body text, bold display
 \definecolor{AvansGray}{HTML}{6B6B6B}       % Mid-grey — secondary text, metadata
+\definecolor{AvansMidGray}{HTML}{BFBFBF}    % Mid gray — borders for code/listing frames
+\definecolor{AvansLightGray}{HTML}{F7F7F7}  % Light gray — subtle backgrounds
 \definecolor{AvansRuleGray}{HTML}{E0E0E0}   % Rule grey — thin dividers only
 \definecolor{AvansWhite}{HTML}{FFFFFF}      % White — backgrounds
 

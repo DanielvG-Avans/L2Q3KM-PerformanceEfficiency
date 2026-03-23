@@ -20,4 +20,4 @@ The app runs locally at `http://localhost:3000`.
 
 ## Notes
 
-- Possibly use cypress for testing the prototype. I dont know if it has performance testing and energy monitoring capabilities, but it may be worth exploring.
+- Possibly use Cypress for testing the prototype. I don't know if it has performance testing and energy monitoring capabilities, but it may be worth exploring.
