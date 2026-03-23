@@ -1,10 +1,19 @@
-danielvginneken@Daniels-MacBook-Pro Desktop % npx create-next-app@latest research-app --ts --tailwind --eslint
-Need to install the following packages:
-create-next-app@16.1.6
-Ok to proceed? (y) y
-✔ Would you like to use React Compiler? … No / Yes
-✔ Would you like your code inside a `src/` directory? … No / Yes
-✔ Would you like to use App Router? (recommended) … No / Yes
-✔ Would you like to customize the import alias (`@/*` by default)? … No / Yes
-Creating a new Next.js app in /Users/danielvginneken/Desktop/research-app.
+# Research Paper Repository
 
+This repository contains all deliverables for the Performance Efficiency research project.
+
+## Repository Structure
+
+- `Proposal/`: Proposal document and supporting planning material.
+- `Prototype/`: Next.js prototype used for demonstrations and implementation work.
+- `Paper/`: Final research manuscript, assets, references, and exported PDF.
+
+## Quick Start (Prototype)
+
+```bash
+cd Prototype
+npm install
+npm run dev
+```
+
+The app runs locally at `http://localhost:3000`.
