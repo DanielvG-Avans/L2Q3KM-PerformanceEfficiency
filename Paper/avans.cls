@@ -66,6 +66,7 @@
 \DeclareOption{10pt}{\PassOptionsToClass{10pt}{article}}
 \DeclareOption{11pt}{\PassOptionsToClass{11pt}{article}}
 \DeclareOption{12pt}{\PassOptionsToClass{12pt}{article}}
+\DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 
 \ExecuteOptions{11pt}
 \ProcessOptions\relax
@@ -77,11 +78,14 @@
 % ============================================================
 
 \RequirePackage{ifthen}
-\RequirePackage{ifpdf}
+\RequirePackage{iftex}
 
 % --- Encoding & language ---
-\RequirePackage[T1]{fontenc}
-\RequirePackage[utf8]{inputenc}
+% Keep legacy encoding packages for pdfTeX; modern engines are UTF-8 native.
+\ifPDFTeX
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage[utf8]{inputenc}
+\fi
 \if@dutch
 	\RequirePackage[dutch]{babel}
 \else
@@ -433,9 +437,9 @@
 		}%
 	}%
 }{%
-		\vspace{6pt}%
-	}
+	\vspace{6pt}%
 	\vspace{10pt}\par%
+	}
 
 
 % ============================================================
