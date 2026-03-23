@@ -1,14 +1,17 @@
 %% avans.cls --- Avans University of Applied Sciences (Avans Hogeschool)
-%% Research Paper Style
+%% Research Paper Style — Brand Identity Compliant
 %%
-%% Based on publicly available Avans Hogeschool brand guidelines
-%% (Huisstijlwijzer / Huisstijlgids, editie september 2020).
+%% Based on Avans Hogeschool Visual Style Guide — Brand Identity document.
 %%
-%% Key brand elements reproduced:
-%%   Primary colour  : Avans Rood  #C6002A  (PMS 1935, CMYK 0/100/57/5)
-%%   Primary typeface: Frutiger -> substituted by TeX Gyre Heros (free, metric-compatible)
-%%   Fallback body   : TeX Gyre Pagella (Palatino-like; readable for long reports)
-%%   Layout          : generous white space, red rule accents, clean chapter/section heads
+%% Key brand elements:
+%%   Primary red     : #CF0A2C  (Avans Red — dominant accent colour)
+%%   Near-black      : #1A1A1A  (body text, bold display text)
+%%   Mid-grey        : #6B6B6B  (secondary text, subtitles, metadata)
+%%   Rule grey       : #E0E0E0  (thin horizontal dividers)
+%%   White           : #FFFFFF  (background/surfaces)
+%%   Primary typeface: Helvetica Neue (headings) -> TeX Gyre Heros (free substitute)
+%%   Body typeface   : Georgia or humanist serif -> TeX Gyre Pagella (Palatino)
+%%   Layout          : generous white space, red punctuation, clean hierarchy
 %%
 %% USAGE
 %%   \documentclass[<options>]{avans}
@@ -101,7 +104,8 @@
 \RequirePackage[scaled=0.88]{inconsolata}
 
 % Set sans-serif as the default document font family (matches Avans digital style)
-\renewcommand{\familydefault}{\sfdefault}
+% Use TeX Gyre Pagella (serif) for body text for readability
+\renewcommand{\familydefault}{\rmdefault}  % serif body by default
 
 % Micro-typography
 \RequirePackage[final]{microtype}
@@ -118,17 +122,18 @@
 	headsep = 10mm,
 	footskip = 15mm
 ]{geometry}
-\setlength{\headheight}{20.1pt}
+\setlength{\headheight}{21.01996pt}
 
 % --- Colour ---
 \RequirePackage[table,dvipsnames]{xcolor}
 
-%  Brand colours --- Avans Huisstijlwijzer
-\definecolor{AvansRed}{HTML}{C6002A}        % Avans Rood  (PMS 1935 / HEX C6002A)
-\definecolor{AvansBlack}{HTML}{1A1A1A}      % Near-black body text
-\definecolor{AvansGray}{HTML}{6B6B6B}       % Secondary gray
-\definecolor{AvansLightGray}{HTML}{F2F2F2}  % Background tint for table rows
-\definecolor{AvansMidGray}{HTML}{CCCCCC}    % Subtle rules / borders
+%% Brand colours — Avans Hogeschool Visual Style Guide
+%% https://avans.nl/ brand identity
+\definecolor{AvansRed}{HTML}{CF0A2C}        % Primary Red — punctuation and accents
+\definecolor{AvansBlack}{HTML}{1A1A1A}      % Near-black — body text, bold display
+\definecolor{AvansGray}{HTML}{6B6B6B}       % Mid-grey — secondary text, metadata
+\definecolor{AvansRuleGray}{HTML}{E0E0E0}   % Rule grey — thin dividers only
+\definecolor{AvansWhite}{HTML}{FFFFFF}      % White — backgrounds
 
 % --- Headers & footers ---
 \RequirePackage{fancyhdr}
@@ -149,6 +154,7 @@
 \RequirePackage{graphicx}
 
 % --- Captions ---
+% Captions: label bold sans red, text regular small sans grey
 \RequirePackage[
 	font      = {small, sf},
 	labelfont = {bf},
@@ -157,7 +163,8 @@
 	justification = raggedright
 ]{caption}
 \DeclareCaptionFont{avansred}{\color{AvansRed}}
-\captionsetup{labelfont={bf,avansred}}
+\DeclareCaptionFont{avansgray}{\color{AvansGray}}
+\captionsetup{labelfont={avansred}, textfont={avansgray}}
 
 % --- Tables ---
 \RequirePackage{booktabs}
@@ -227,33 +234,37 @@
 \setstretch{1.15}
 
 % ============================================================
-%  4. SECTION HEADINGS --- Avans style
-%     Large, sans-serif, Avans Rood, with a coloured rule below
+%  4. SECTION HEADINGS — Avans Visual Style Guide compliant
+%
+%  H1 (section)      : Bold sans, large, #1A1A1A, number in #CF0A2C, 
+%                      followed by thin #E0E0E0 rule
+%  H2 (subsection)   : Bold sans, normal size, #1A1A1A, grey number
+%  H3 (subsubsection): Italic sans, normal size, #6B6B6B
 % ============================================================
 
 %  \section  -----------------------------------------------
 \titleformat{\section}
-	{\Large\bfseries\sffamily\color{AvansRed}}   % format
-	{\thesection}                                  % label
+	{\Large\bfseries\sffamily\color{AvansBlack}}  % format: dark text
+	{\color{AvansRed}\thesection}                  % label: red number
 	{0.75em}                                       % sep
 	{}                                             % before-code
-	[\vspace{2pt}\color{AvansRed}\rule{\linewidth}{1.5pt}]  % after-code
+	[\vspace{4pt}\color{AvansRuleGray}\rule{\linewidth}{0.8pt}]  % after: thin grey rule
 
-\titlespacing*{\section}{0pt}{18pt plus 4pt minus 2pt}{8pt plus 2pt}
+\titlespacing*{\section}{0pt}{16pt plus 4pt minus 2pt}{8pt plus 2pt}
 
 %  \subsection  --------------------------------------------
 \titleformat{\subsection}
-	{\large\bfseries\sffamily\color{AvansBlack}}
-	{\thesubsection}
-	{0.75em}
-	{}
-	[\vspace{1pt}\color{AvansMidGray}\rule{\linewidth}{0.6pt}]
+	{\large\bfseries\sffamily\color{AvansBlack}}   % format
+	{\color{AvansGray}\thesubsection}              % label: grey number
+	{0.75em}                                       % sep
+	{}                                             % before-code
+	[]                                             % no under-rule for H2
 
 \titlespacing*{\subsection}{0pt}{14pt plus 3pt minus 2pt}{6pt plus 1pt}
 
 %  \subsubsection  -----------------------------------------
 \titleformat{\subsubsection}
-	{\normalsize\bfseries\sffamily\color{AvansBlack}}
+	{\normalsize\itshape\sffamily\color{AvansGray}}
 	{\thesubsubsection}
 	{0.75em}
 	{}
@@ -270,29 +281,29 @@
 \titlespacing*{\paragraph}{0pt}{8pt}{4pt}
 
 % ============================================================
-%  5. TABLE OF CONTENTS --- styled
+%  5. TABLE OF CONTENTS — styled
 % ============================================================
 \contentsmargin{0pt}
 
 \titlecontents{section}
 	[0pt]                                          % left
-	{\vspace{4pt}\bfseries\sffamily}              % above-code
-	{\contentslabel{2.2em}}                        % numbered
-	{\hspace*{-2.2em}}                             % unnumbered
+	{\vspace{3pt}\bfseries\sffamily}              % above-code
+	{\contentslabel{1.8em}}                        % numbered
+	{\hspace*{-1.8em}}                             % unnumbered
 	{\hfill\bfseries\color{AvansRed}\contentspage} % filler-page
 
 \titlecontents{subsection}
-	[1.5em]
+	[1.2em]
 	{\vspace{1pt}\sffamily}
-	{\contentslabel{2.8em}}
-	{\hspace*{-2.8em}}
+	{\contentslabel{2.2em}}
+	{\hspace*{-2.2em}}
 	{\enspace\color{AvansGray}\titlerule*[6pt]{.}\contentspage}
 
 \titlecontents{subsubsection}
-	[3.5em]
+	[2.8em]
 	{\small\sffamily\color{AvansGray}}
-	{\contentslabel{3.2em}}
-	{\hspace*{-3.2em}}
+	{\contentslabel{2.6em}}
+	{\hspace*{-2.6em}}
 	{\enspace\titlerule*[6pt]{.}\contentspage}
 
 % Rename ToC heading if Dutch
@@ -301,118 +312,123 @@
 \fi
 
 % ============================================================
-%  6. HEADER & FOOTER
+%  6. HEADER & FOOTER — Avans Style Guide compliant
+%
+%  Header: section left (small mid-grey) | "Avans Hogeschool" right
+%          Thin red rule below
+%  Footer: page number centred (small mid-grey)
 % ============================================================
 \pagestyle{fancy}
 \fancyhf{}
 
-% Top red rule
-\renewcommand{\headrulewidth}{1.5pt}
+% Top: thin red rule (#CF0A2C, 0.6pt per guide)
+\renewcommand{\headrulewidth}{0.6pt}
 \renewcommand{\headrule}{%
-	\vspace{-4pt}%
-	\color{AvansRed}\rule{\linewidth}{1.5pt}%
+	\vspace{-3pt}%
+	\color{AvansRed}\rule{\linewidth}{0.6pt}%
 }
 
-% Header left: institution name in AvansRed
+% Header left: section name (small, mid-grey, sans)
 \fancyhead[L]{%
-	\small\sffamily\bfseries\color{AvansRed}\@institution
-}
-
-% Header right: section name
-\fancyhead[R]{%
 	\small\sffamily\color{AvansGray}\leftmark
 }
 
-% Footer rule
-\renewcommand{\footrulewidth}{0.4pt}
-\renewcommand{\footrule}{%
-	\color{AvansMidGray}\rule{\linewidth}{0.4pt}%
+% Header right: institution (small, mid-grey, sans)
+\fancyhead[R]{%
+	\small\sffamily\color{AvansGray}Avans Hogeschool
 }
 
-% Footer: author left, page number right
-\fancyfoot[L]{%
-	\small\sffamily\color{AvansGray}\@author
-}
-\fancyfoot[R]{%
-	\small\sffamily\color{AvansGray}%
-	\if@dutch Pagina~\else Page~\fi\thepage\,/\,\pageref{LastPage}
+% Footer: no rule, just page number centred
+\renewcommand{\footrulewidth}{0pt}
+
+% Footer centred: page number (small, mid-grey, sans)
+\fancyfoot[C]{%
+	\small\sffamily\color{AvansGray}\thepage
 }
 
-% Plain style for first pages of sections
+% Plain style for first pages of sections (cover, TOC)
 \fancypagestyle{plain}{%
 	\fancyhf{}%
-	\fancyfoot[R]{\small\sffamily\color{AvansGray}\thepage}%
+	\fancyfoot[C]{\small\sffamily\color{AvansGray}\thepage}%
 	\renewcommand{\headrulewidth}{0pt}%
-	\renewcommand{\footrulewidth}{0.4pt}%
-	\renewcommand{\footrule}{\color{AvansMidGray}\rule{\linewidth}{0.4pt}}%
+	\renewcommand{\footrulewidth}{0pt}%
 }
 
 % ============================================================
-%  7. TITLE PAGE  (\maketitle)
+%  7. TITLE PAGE — Avans Visual Style Guide compliant
+%
+%  1. Solid red (#CF0A2C) bar at top
+%  2. Thick red rule (2.5pt)
+%  3. Title (bold sans, large, dark)
+%  4. Thin closing rule (0.8pt)
+%  5. Metadata block below
+%  6. Footer with institution and URL
 % ============================================================
 \renewcommand{\maketitle}{%
 	\hypersetup{pageanchor=false}%
 	\begin{titlepage}
 		\thispagestyle{empty}
-		% --- Top red bar (4 mm thick) ---
+		
+		% --- Bar 1: Solid Avans Red top bar (white institution name) ---
 		\noindent
 		\colorbox{AvansRed}{%
 			\parbox[c][14mm]{\dimexpr\textwidth-2\fboxsep\relax}{%
-				\hspace*{4mm}%
+				\hspace*{5mm}%
 				\textcolor{white}{\sffamily\bfseries\large\@institution}%
+				\hfill%
+				\ifthenelse{\equal{\@course}{}}{}{%
+					\textcolor{white}{\sffamily\bfseries\large\@course}%
+					\hspace*{5mm}%
+				}%
 			}%
 		}\par
-		\vspace*{20mm}
+		
+		\vspace*{12mm}
 
-		% --- Programme / course badge ---
+		% --- Thick red rule (2.5pt) ---
+		\color{AvansRed}\rule{\linewidth}{2.5pt}
+		\color{AvansBlack}
+		\vspace*{18mm}
+
+		% --- Title (bold sans, large, dark) ---
+		{\fontsize{32}{40}\selectfont\sffamily\bfseries\color{AvansBlack}\@title\par}
+		
+		% --- Programme info (if present) ---
 		\ifthenelse{\equal{\@programme}{}}{}{%
-			\textcolor{AvansRed}{\sffamily\small\bfseries\MakeUppercase{\@programme}}\\[4pt]%
+			\vspace{6pt}%
+			{\normalsize\sffamily\color{AvansGray}\@programme\par}%
 		}%
-		\ifthenelse{\equal{\@course}{}}{}{%
-			\textcolor{AvansGray}{\sffamily\small\@course}\\[2pt]%
-		}%
+		
+		\vspace{16mm}
 
-		\vspace{10mm}
-
-		% --- Title (very large, red) ---
-		{\fontsize{28}{34}\selectfont\sffamily\bfseries\color{AvansRed}\@title\par}
-		\vspace{6mm}
-
-		% --- Red accent rule ---
-		\color{AvansRed}\rule{\linewidth}{3pt}
-		\color{black}
-		\vspace{10mm}
+		% --- Thin red rule closes title block (0.8pt) ---
+		{\color{AvansRed}\rule{\linewidth}{0.8pt}}
+		\vspace{16mm}
 
 		% --- Author block ---
-		{\large\sffamily\bfseries\color{AvansBlack}\@author}\\[3pt]
+		{\Large\sffamily\bfseries\color{AvansBlack}\@author}\\[4pt]
 		\ifthenelse{\equal{\@studentnumber}{}}{}{%
 			{\small\sffamily\color{AvansGray}%
-				\if@dutch Studentnummer\else Student number\fi:
-				\@studentnumber}\\[2pt]%
+				\if@dutch Studentnummer\else Student Number\fi:
+				\@studentnumber}\\[3pt]%
 		}%
-
-		\vspace{8mm}
-
-		% --- Meta table ---
-		\begin{tabular}{@{}l@{\hspace{6mm}}l@{}}
-			\ifthenelse{\equal{\@supervisor}{}}{}{%
-				{\small\sffamily\color{AvansGray}%
-					\if@dutch Begeleider\else Supervisor\fi}%
-				& {\small\sffamily\color{AvansBlack}\@supervisor} \\[3pt]%
-			}%
+		\ifthenelse{\equal{\@supervisor}{}}{}{%
 			{\small\sffamily\color{AvansGray}%
-				\if@dutch Datum\else Date\fi}%
-			& {\small\sffamily\color{AvansBlack}\@date} \\
-		\end{tabular}
+				\if@dutch Begeleider\else Supervisor\fi:
+				\@supervisor}\\[3pt]%
+		}%
+		{\small\sffamily\color{AvansGray}%
+			\if@dutch Datum\else Date\fi:
+			\@date}%
 
 		\vfill
 
-		% --- Bottom logo-area (wordmark in red) ---
+		% --- Footer: institution left, URL right ---
+		{\color{AvansRuleGray}\rule{\linewidth}{0.8pt}}
+		\vspace*{4pt}
 		\noindent
-		\rule{\linewidth}{0.6pt}\\[4pt]
-		{\sffamily\bfseries\color{AvansRed}\large avans}%
-		{\sffamily\color{AvansGray}\large\, hogeschool}
-		\hfill
+		{\small\sffamily\color{AvansGray}\@institution}%
+		\hfill%
 		{\small\sffamily\color{AvansGray}avans.nl}
 
 	\end{titlepage}%
@@ -424,21 +440,17 @@
 %  8. ABSTRACT ENVIRONMENT
 % ============================================================
 \renewenvironment{abstract}{%
-	\vspace*{4pt}%
-	\noindent\colorbox{AvansLightGray}{%
-		\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
-			\vspace{6pt}%
-			\noindent{\sffamily\bfseries\color{AvansRed}%
-				\if@dutch Samenvatting\else Abstract\fi}%
-			\par\vspace{4pt}%
-			\small\sffamily\color{AvansBlack}%
-			\setstretch{1.1}%
-			\ignorespaces
-		}%
-	}%
-}{%
+	\vspace*{8pt}%
+	\noindent{\sffamily\small\bfseries\color{AvansRed}%
+		\if@dutch Samenvatting\else Abstract\fi}%
+	\par\vspace{4pt}%
+	\noindent{\color{AvansRuleGray}\rule{\linewidth}{0.8pt}}%
 	\vspace{6pt}%
-	\vspace{10pt}\par%
+	\small\rmfamily\color{AvansBlack}%
+	\setstretch{1.1}%
+	\ignorespaces
+}{%
+	\vspace{8pt}\par%
 	}
 
 
@@ -454,34 +466,34 @@
 }
 
 % ============================================================
-%  10. TABLE STYLES
+%  10. TABLE STYLES — Avans Visual Style Guide compliant
+%
+%  Header: bold sans, small, CAPS, #6B6B6B (grey). No background color.
+%  Rules: horizontal only (top, header, bottom) in #E0E0E0
+%  Rows: white background, no zebra, no vertical rules
 % ============================================================
-% Avans tables: white space, red header row, alternating light rows
 
-% Colour for table header row background
-\colorlet{AvansTableHead}{AvansRed}
-
-% Convenience command for a styled header row
-\newcommand{\tableheadrow}{\rowcolor{AvansTableHead}}
-
-% Row colours via xcolor table
-\rowcolors{2}{AvansLightGray}{white}
-
-% Redefine \toprule / \midrule to use brand colour
+% Configure booktabs rules to use guide colours
 \let\@old@toprule\toprule
 \let\@old@midrule\midrule
 \let\@old@bottomrule\bottomrule
 
-\renewcommand{\toprule}{\color{AvansRed}\specialrule{1.5pt}{0pt}{3pt}\color{black}}
-\renewcommand{\midrule}{\color{AvansMidGray}\specialrule{0.4pt}{2pt}{2pt}\color{black}}
-\renewcommand{\bottomrule}{\color{AvansRed}\specialrule{1.5pt}{3pt}{0pt}\color{black}}
+\renewcommand{\toprule}{\color{AvansRuleGray}\specialrule{0.8pt}{0pt}{2pt}\color{AvansBlack}}
+\renewcommand{\midrule}{\color{AvansRuleGray}\specialrule{0.8pt}{2pt}{2pt}\color{AvansBlack}}
+\renewcommand{\bottomrule}{\color{AvansRuleGray}\specialrule{0.8pt}{2pt}{0pt}\color{AvansBlack}}
+
+% Table header style command
+\newcommand{\tableheadrow}{%
+	\rowcolor{white}%
+	\bfseries\sffamily\small\color{AvansGray}%
+}
 
 % ============================================================
 %  11. CALLOUT / INFO BOX ENVIRONMENTS
+%
+%  infobox   : left red border (#CF0A2C) — important callouts
+%  notebox   : left grey border (#6B6B6B) — secondary notes
 % ============================================================
-% \begin{infobox}[title] ... \end{infobox}
-% Styled box with left red border --- useful for definitions, notes, etc.
-
 \RequirePackage{mdframed}
 
 \newmdenv[
@@ -491,7 +503,7 @@
 	leftline   = true,
 	linewidth  = 4pt,
 	linecolor  = AvansRed,
-	backgroundcolor = AvansLightGray,
+	backgroundcolor = white,
 	innerleftmargin  = 12pt,
 	innerrightmargin = 8pt,
 	innertopmargin   = 8pt,
@@ -505,12 +517,12 @@
 	\ifthenelse{\equal{#1}{}}{}{%
 		{\sffamily\bfseries\color{AvansRed}#1}\\[4pt]%
 	}%
-	\sffamily\small%
+	\sffamily\small\color{AvansBlack}%
 }{%
 	\end{avans@infobox}%
 }
 
-% Warning box (same but AvansGray border)
+% Note box (grey border for secondary callouts)
 \newmdenv[
 	topline    = false,
 	bottomline = false,
@@ -518,7 +530,7 @@
 	leftline   = true,
 	linewidth  = 4pt,
 	linecolor  = AvansGray,
-	backgroundcolor = AvansLightGray,
+	backgroundcolor = white,
 	innerleftmargin  = 12pt,
 	innerrightmargin = 8pt,
 	innertopmargin   = 8pt,
@@ -532,7 +544,7 @@
 	\ifthenelse{\equal{#1}{}}{}{%
 		{\sffamily\bfseries\color{AvansGray}#1}\\[4pt]%
 	}%
-	\sffamily\small%
+	\sffamily\small\color{AvansBlack}%
 }{%
 	\end{avans@notebox}%
 }
