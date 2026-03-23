@@ -1,0 +1,22 @@
+\section{Research Question}
+
+\textbf{Main question:}
+
+How does the choice between server-side rendering (SSR) and client-side rendering (CSR) affect CPU and memory usage on mobile client devices during the render process, and what does this mean for developing resource-efficient frontends?
+
+\textbf{Sub-questions:}
+
+\begin{enumerate}
+	\item What are the technical differences between SSR and CSR regarding client-side processing during the render process?
+	\item To what extent does CPU usage differ between SSR and CSR in identical web applications on mobile devices?
+	\item To what extent does memory usage differ between SSR and CSR in the same context?
+	\item To what extent can CPU usage serve as an indicator for energy consumption when comparing render strategies?
+\end{enumerate}
+
+\subsection*{Hypothesis}
+
+Based on the literature and technical analysis, I think that server-side rendering will on average be more energy-efficient on mobile devices compared to client-side rendering. The main reason for this is that with SSR, the largest part of the HTML is generated on the server, so the client only needs to parse and display it. With CSR, JavaScript must first be executed to dynamically generate HTML and place it in the DOM.
+
+At the same time, it is not excluded that CSR could prove more efficient in certain situations. With SSR, extra data is often sent from the server, for example in the form of serialized JSON objects (such as with the React inflight protocol in Next.js). This can cause extra network traffic and additional processing on the client side. Additionally, the network architecture can affect results: with SSR, the application server is often close to the database, allowing data to be retrieved faster. With CSR, a separate API call is needed from the client, which can introduce extra latency and processing.
+
+On the other hand, CSR offers advantages in terms of hosting architecture. A fully client-side application can be statically hosted via a CDN, meaning no server-side compute is needed.
