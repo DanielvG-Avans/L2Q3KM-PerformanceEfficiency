@@ -105,8 +105,8 @@
 % sans (headings/metadata) and serif (body).
 \renewcommand{\sfdefault}{phv}
 
-% Use TeX Gyre Pagella (serif) as the default document font family for body text readability
-\renewcommand{\familydefault}{\rmdefault}  % serif body by default
+% Use a sans body for a closer match to Avans web typography.
+\renewcommand{\familydefault}{\sfdefault}
 
 % Micro-typography
 \RequirePackage[final]{microtype}
@@ -123,7 +123,7 @@
 	headsep = 10mm,
 	footskip = 15mm
 ]{geometry}
-\setlength{\headheight}{21.01996pt}
+\setlength{\headheight}{16pt}
 
 % --- Colour ---
 \RequirePackage[table,dvipsnames]{xcolor}
@@ -132,8 +132,10 @@
 %% https://avans.nl/ brand identity
 \definecolor{AvansRed}{HTML}{CF0A2C}        % Primary Red — punctuation and accents
 \definecolor{AvansBlack}{HTML}{1A1A1A}      % Near-black — body text, bold display
+\definecolor{AvansInk}{HTML}{131313}        % Site dark text tone
 \definecolor{AvansGray}{HTML}{6B6B6B}       % Mid-grey — secondary text, metadata
 \definecolor{AvansRuleGray}{HTML}{E0E0E0}   % Rule grey — thin dividers only
+\definecolor{AvansLightGray}{HTML}{F5F5F5}  % Soft neutral for subtle separation
 \definecolor{AvansWhite}{HTML}{FFFFFF}      % White — backgrounds
 
 % --- Headers & footers ---
@@ -234,9 +236,10 @@
 %  3. TYPOGRAPHY --- BODY TEXT
 % ============================================================
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-\setstretch{1.15}
-\AtBeginDocument{\color{AvansBlack}\RaggedRight}
+\setlength{\parskip}{7pt plus 2pt minus 1pt}
+\setstretch{1.18}
+\AtBeginDocument{\color{AvansInk}\RaggedRight}
+\setlength{\emergencystretch}{1.2em}
 
 % Breathing room around figures/tables to avoid crowded pages.
 \setlength{\intextsep}{14pt plus 4pt minus 2pt}
@@ -256,17 +259,22 @@
 
 %  \section  -----------------------------------------------
 \titleformat{\section}
-	{\Large\bfseries\sffamily\color{AvansBlack}}  % format: dark text
+	{\fontsize{19}{24}\selectfont\bfseries\sffamily\color{AvansInk}}  % format: dark text
 	{\color{AvansRed}\thesection}                  % label: red number
 	{0.75em}                                       % sep
 	{}                                             % before-code
-	[\vspace{4pt}\color{AvansRuleGray}\rule{\linewidth}{0.8pt}]  % after: thin grey rule
+	[%
+		\vspace{5pt}%
+		\color{AvansRuleGray}\rule{\linewidth}{0.8pt}%
+		\vspace{-0.8pt}%
+		\color{AvansRed}\rule{20mm}{0.8pt}%
+	]  % after: thin grey rule with red accent
 
 \titlespacing*{\section}{0pt}{16pt plus 4pt minus 2pt}{8pt plus 2pt}
 
 %  \subsection  --------------------------------------------
 \titleformat{\subsection}
-	{\large\bfseries\sffamily\color{AvansBlack}}   % format
+	{\fontsize{14}{18}\selectfont\bfseries\sffamily\color{AvansInk}}   % format
 	{\color{AvansGray}\thesubsection}              % label: grey number
 	{0.75em}                                       % sep
 	{}                                             % before-code
@@ -295,14 +303,14 @@
 % ============================================================
 %  5. TABLE OF CONTENTS — styled
 % ============================================================
-\contentsmargin{0pt}
+\contentsmargin{2.8em}
 
 \titlecontents{section}
 	[0pt]                                          % left
 	{\vspace{3pt}\bfseries\sffamily}              % above-code
 	{\contentslabel{1.8em}}                        % numbered
 	{\hspace*{-1.8em}}                             % unnumbered
-	{\hfill\bfseries\color{AvansRed}\contentspage} % filler-page
+	{\hfill\color{AvansRed}\contentspage} % filler-page
 
 \titlecontents{subsection}
 	[1.2em]
@@ -326,38 +334,37 @@
 % ============================================================
 %  6. HEADER & FOOTER — Avans Style Guide compliant
 %
-%  Header: section left (small mid-grey) | "Avans Hogeschool" right
-%          Thin red rule below
-%  Footer: page number centred (small mid-grey)
+%  Header: AVANS anchor left (red), institution centre, page number right
+%          Thin red divider
+%  Footer: centred page number in small mid-grey
 % ============================================================
 \pagestyle{fancy}
 \fancyhf{}
 
-% Top: thin red rule (#CF0A2C, 0.6pt per guide)
+% Thin red divider below the header row.
 \renewcommand{\headrulewidth}{0.6pt}
 \renewcommand{\headrule}{%
-	\vspace{-3pt}%
-	\color{AvansRed}\rule{\linewidth}{0.6pt}%
+	\color{AvansRed}\hrule height \headrulewidth\relax
 }
 
-% Header left: section name (small, mid-grey, sans)
-\renewcommand{\sectionmark}[1]{\markboth{\thesection\enspace #1}{}}
+% Header left: brand anchor.
 \fancyhead[L]{%
-	\small\sffamily\color{AvansGray}\leftmark
+	\small\sffamily\bfseries\color{AvansRed}AVANS\enspace HOGESCHOOL
 }
 
-% Header right: institution (small, mid-grey, sans)
+% Header centre: contextual label.
+\fancyhead[C]{%
+	\small\sffamily\color{AvansGray}%
+	\ifthenelse{\equal{\@course}{}}{\@programme}{\@course}
+}
+
+% Header right: page number.
 \fancyhead[R]{%
-	\small\sffamily\color{AvansGray}Avans Hogeschool
+	\small\sffamily\bfseries\color{AvansInk}\thepage
 }
 
-% Footer: no rule, just page number centred
+% Footer: no rule and no duplicate page number.
 \renewcommand{\footrulewidth}{0pt}
-
-% Footer centred: page number (small, mid-grey, sans)
-\fancyfoot[C]{%
-	\small\sffamily\color{AvansGray}\thepage
-}
 
 % Plain style for first pages of sections (cover, TOC)
 \fancypagestyle{plain}{%
@@ -400,11 +407,12 @@
 
 		% --- Thick red rule (2.5pt) ---
 		\color{AvansRed}\rule{\linewidth}{2.5pt}
-		\color{AvansBlack}
+		\color{AvansInk}
 		\vspace*{18mm}
 
 		% --- Title (bold sans, large, dark) ---
-		{\fontsize{32}{40}\selectfont\sffamily\bfseries\color{AvansBlack}\@title\par}
+		{\fontsize{30}{36}\selectfont\sffamily\bfseries\color{AvansInk}%
+		\parbox[t]{\linewidth}{\raggedright\@title}\par}
 		
 		% --- Optional subtitle in medium sans, mid-grey ---
 		\ifthenelse{\equal{\@subtitle}{}}{}{%
@@ -425,7 +433,7 @@
 		\vspace{16mm}
 
 		% --- Author block ---
-		{\Large\sffamily\bfseries\color{AvansBlack}\@author}\\[4pt]
+		{\Large\sffamily\bfseries\color{AvansInk}\@author}\\[4pt]
 		\ifthenelse{\equal{\@studentnumber}{}}{}{%
 			{\small\sffamily\color{AvansGray}%
 				\if@dutch Studentnummer\else Student Number\fi:
@@ -465,7 +473,7 @@
 	\par\vspace{4pt}%
 	\noindent{\color{AvansRuleGray}\rule{\linewidth}{0.8pt}}%
 	\vspace{6pt}%
-	\small\rmfamily\color{AvansBlack}%
+	\small\sffamily\color{AvansInk}%
 	\setstretch{1.1}%
 	\ignorespaces
 }{%
@@ -492,14 +500,17 @@
 %  Rows: white background, no zebra, no vertical rules
 % ============================================================
 
-% Configure booktabs rules to use guide colours
-\let\@old@toprule\toprule
-\let\@old@midrule\midrule
-\let\@old@bottomrule\bottomrule
+% Keep booktabs semantics and set Avans rule color/weight safely.
+\setlength{\heavyrulewidth}{0.8pt}
+\setlength{\lightrulewidth}{0.8pt}
+\setlength{\cmidrulewidth}{0.8pt}
 
-\renewcommand{\toprule}{\color{AvansRuleGray}\specialrule{0.8pt}{0pt}{2pt}\color{AvansBlack}}
-\renewcommand{\midrule}{\color{AvansRuleGray}\specialrule{0.8pt}{2pt}{2pt}\color{AvansBlack}}
-\renewcommand{\bottomrule}{\color{AvansRuleGray}\specialrule{0.8pt}{2pt}{0pt}\color{AvansBlack}}
+\AtBeginEnvironment{tabular}{\arrayrulecolor{AvansRuleGray}}
+\AtEndEnvironment{tabular}{\arrayrulecolor{AvansBlack}}
+\AtBeginEnvironment{tabularx}{\arrayrulecolor{AvansRuleGray}}
+\AtEndEnvironment{tabularx}{\arrayrulecolor{AvansBlack}}
+\AtBeginEnvironment{longtable}{\arrayrulecolor{AvansRuleGray}}
+\AtEndEnvironment{longtable}{\arrayrulecolor{AvansBlack}}
 
 % Table header style command
 \newcommand{\tablehead}[1]{\textsf{\bfseries\small\color{AvansGray}\MakeUppercase{#1}}}
@@ -576,6 +587,17 @@
 	\AtBeginDocument{\renewcommand{\refname}{Literatuurlijst}}
 	\AtBeginDocument{\renewcommand{\bibname}{Literatuurlijst}}
 \fi
+
+% Give the ToC a stronger editorial heading block.
+\renewcommand{\tableofcontents}{%
+	\clearpage
+	\thispagestyle{plain}%
+	{\Large\bfseries\sffamily\color{AvansBlack}\contentsname\par}
+	\vspace{4pt}%
+	{\color{AvansRed}\rule{\linewidth}{0.8pt}}\par
+	\vspace{8pt}%
+	\@starttoc{toc}%
+}
 
 % ============================================================
 %  13. HYPERREF METADATA HOOK
