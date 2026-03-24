@@ -16,7 +16,7 @@
 //     --url http://192.168.x.x:3000 \
 //     --condition ssr \
 //     --run 1 \
-//     --out results/run_1_ssr.json
+//     --out data/runs/YYYYMMDD_HHMMSS/raw/run_1_ssr.json
 // =============================================================================
 
 const puppeteer = require("puppeteer-core");

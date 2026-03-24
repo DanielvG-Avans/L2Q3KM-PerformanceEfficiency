@@ -58,24 +58,23 @@ const PAGES = [
 ```
 
 Change these to your actual app routes. Both apps must have the same routes.
----
 
 ## Output
 
-data/raw/YYYYMMDD_HHMMSS/
-├── run_order.txt ← randomised condition sequence (reproducibility)
-├── temperatures.csv ← per-run start temperature log
-├── run_N_ssr.json ← DevTools metrics per run (LCP, FCP, TBT, etc.)
-├── run_N_ssr.perfetto-trace ← raw trace (open at ui.perfetto.dev)
-└── run_N_ssr.battery.csv ← fallback battery telemetry samples
-
-data/processed/YYYYMMDD_HHMMSS/
-├── energy_metrics.csv ← extracted energy per run
-
-results/
-├── statistics.csv ← Mann-Whitney U results
-├── report.md ← paper-ready results table
-└── plots/ ← box plots (energy, LCP, TBT, ...)
+```text
+data/runs/YYYYMMDD_HHMMSS/
+├── raw/
+│   ├── run_order.txt ← randomised condition sequence (reproducibility)
+│   ├── temperatures.csv ← per-run start temperature log
+│   ├── run_N_ssr.json ← DevTools metrics per run (LCP, FCP, TBT, etc.)
+│   ├── run_N_ssr.perfetto-trace ← raw trace (open at ui.perfetto.dev)
+│   └── run_N_ssr.battery.csv ← fallback battery telemetry samples
+├── processed/
+│   └── energy_metrics.csv ← extracted energy per run
+└── analysis/
+    ├── statistics.csv ← Mann-Whitney U results
+    ├── report.md ← paper-ready results table
+    └── plots/ ← box plots (energy, LCP, TBT, ...)
 ```
 
 ---
@@ -110,9 +109,12 @@ re-run before each scenario in case the ADB connection resets.
 Analysis only (no device needed):
 
 ```bash
-python3 analysis/parse_perfetto.py --results-dir data/raw/YYYYMMDD_HHMMSS
-python3 analysis/analyse.py        --results-dir data/raw/YYYYMMDD_HHMMSS
+python3 analysis/parse_perfetto.py --results-dir data/runs/YYYYMMDD_HHMMSS/raw
+python3 analysis/analyse.py        --results-dir data/runs/YYYYMMDD_HHMMSS/raw
+
+# preferred names
+python3 analysis/extract_energy.py --results-dir data/runs/YYYYMMDD_HHMMSS/raw
+python3 analysis/analyze_runs.py   --results-dir data/runs/YYYYMMDD_HHMMSS/raw
 ```
 
-Publish the entire `results/` directory for full transparency.
-````
+Publish the full `data/runs/YYYYMMDD_HHMMSS/` folder for full transparency.

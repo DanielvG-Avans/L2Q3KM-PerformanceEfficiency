@@ -24,9 +24,11 @@ CSR_URL=""
 MAX_TEMP_C=37
 COOL_WAIT_S=45
 BATTERY_POLL_S=1
-RESULTS_DIR="../data/raw/$(date +%Y%m%d_%H%M%S)"
-PROCESSED_DIR="../data/processed/$(basename "$RESULTS_DIR")"
-FINAL_RESULTS_DIR="../results"
+RUN_ID="$(date +%Y%m%d_%H%M%S)"
+RUN_ROOT_DIR="../data/runs/${RUN_ID}"
+RAW_DIR="${RUN_ROOT_DIR}/raw"
+PROCESSED_DIR="${RUN_ROOT_DIR}/processed"
+ANALYSIS_DIR="${RUN_ROOT_DIR}/analysis"
 DEVICE_ID="RZCT401NHBN"
 BATTERY_POLL_PID=""
 
@@ -47,7 +49,7 @@ done
   exit 1
 }
 
-mkdir -p "$RESULTS_DIR"
+mkdir -p "$RAW_DIR" "$PROCESSED_DIR" "$ANALYSIS_DIR"
 
 start_battery_poller() {
   local out_csv="$1"
@@ -118,7 +120,7 @@ adb -s "$DEVICE_ID" push perfetto_config.pbtxt /data/misc/perfetto-configs/ >/de
 adb -s "$DEVICE_ID" forward tcp:9222 localabstract:chrome_devtools_remote
 
 # ── Randomized run order ─────────────────────────────────────────
-python3 - <<EOF > "$RESULTS_DIR/run_order.txt"
+python3 - <<EOF > "$RAW_DIR/run_order.txt"
 import random
 runs = $RUNS
 conds = ['ssr'] * runs + ['csr'] * runs
@@ -126,7 +128,7 @@ random.shuffle(conds)
 print("\n".join(conds))
 EOF
 
-echo "run,condition,temp_c,timestamp" > "$RESULTS_DIR/temperatures.csv"
+echo "run,condition,temp_c,timestamp" > "$RAW_DIR/temperatures.csv"
 
 RUN_NUM=0
 
@@ -135,9 +137,9 @@ while IFS= read -r CONDITION <&3; do
   URL=$([[ "$CONDITION" == "ssr" ]] && echo "$SSR_URL" || echo "$CSR_URL")
 
   TRACE_REMOTE="/data/misc/perfetto-traces/trace_${CONDITION}_${RUN_NUM}"
-  TRACE_LOCAL="$RESULTS_DIR/run_${RUN_NUM}_${CONDITION}.perfetto-trace"
-  METRICS_FILE="$RESULTS_DIR/run_${RUN_NUM}_${CONDITION}.json"
-  BATTERY_CSV="$RESULTS_DIR/run_${RUN_NUM}_${CONDITION}.battery.csv"
+  TRACE_LOCAL="$RAW_DIR/run_${RUN_NUM}_${CONDITION}.perfetto-trace"
+  METRICS_FILE="$RAW_DIR/run_${RUN_NUM}_${CONDITION}.json"
+  BATTERY_CSV="$RAW_DIR/run_${RUN_NUM}_${CONDITION}.battery.csv"
 
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -155,7 +157,7 @@ while IFS= read -r CONDITION <&3; do
 
   TEMP_C=$(python3 -c "print(round($TEMP_RAW/10,1))")
 
-  echo "$RUN_NUM,$CONDITION,$TEMP_C,$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$RESULTS_DIR/temperatures.csv"
+  echo "$RUN_NUM,$CONDITION,$TEMP_C,$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$RAW_DIR/temperatures.csv"
 
   echo "Temp: ${TEMP_C}°C"
 
@@ -198,7 +200,7 @@ while IFS= read -r CONDITION <&3; do
     --run "$RUN_NUM" \
     --device-id "$DEVICE_ID" \
     --out "$METRICS_FILE" \
-    2>&1 | tee "$RESULTS_DIR/run_${RUN_NUM}_${CONDITION}.log"
+    2>&1 | tee "$RAW_DIR/run_${RUN_NUM}_${CONDITION}.log"
 
   stop_battery_poller
 
@@ -225,7 +227,7 @@ while IFS= read -r CONDITION <&3; do
   SIZE=$(wc -c < "$TRACE_LOCAL" 2>/dev/null || echo 0)
   echo "Trace size: $(echo "scale=1; $SIZE/1048576" | bc) MB"
 
-done 3< "$RESULTS_DIR/run_order.txt"
+done 3< "$RAW_DIR/run_order.txt"
 
 adb -s "$DEVICE_ID" shell dumpsys battery reset >/dev/null 2>&1 || true
 
@@ -233,18 +235,21 @@ adb -s "$DEVICE_ID" shell dumpsys battery reset >/dev/null 2>&1 || true
 echo ""
 echo "Running analysis..."
 
-python3 ../analysis/parse_perfetto.py --results-dir "$RESULTS_DIR"
-python3 ../analysis/analyse.py        --results-dir "$RESULTS_DIR"
+python3 ../analysis/extract_energy.py --raw-dir "$RAW_DIR"
+python3 ../analysis/analyze_runs.py   --raw-dir "$RAW_DIR"
 
-# ── Publish outputs into structured folders ──────────────────────
-mkdir -p "$PROCESSED_DIR" "$FINAL_RESULTS_DIR/plots" "$FINAL_RESULTS_DIR/tables"
+# ── Publish outputs into run-scoped folders ──────────────────────
+mkdir -p "$PROCESSED_DIR" "$ANALYSIS_DIR/plots"
 
-[[ -f "$RESULTS_DIR/energy_metrics.csv" ]] && cp -f "$RESULTS_DIR/energy_metrics.csv" "$PROCESSED_DIR/energy_metrics.csv"
-[[ -f "$RESULTS_DIR/statistics.csv" ]]    && cp -f "$RESULTS_DIR/statistics.csv" "$FINAL_RESULTS_DIR/statistics.csv"
-[[ -f "$RESULTS_DIR/report.md" ]]         && cp -f "$RESULTS_DIR/report.md" "$FINAL_RESULTS_DIR/report.md"
-[[ -d "$RESULTS_DIR/plots" ]]             && cp -f "$RESULTS_DIR/plots"/*.png "$FINAL_RESULTS_DIR/plots/" 2>/dev/null || true
+[[ -f "$RAW_DIR/energy_metrics.csv" ]] && mv -f "$RAW_DIR/energy_metrics.csv" "$PROCESSED_DIR/energy_metrics.csv"
+[[ -f "$RAW_DIR/statistics.csv" ]]    && mv -f "$RAW_DIR/statistics.csv" "$ANALYSIS_DIR/statistics.csv"
+[[ -f "$RAW_DIR/report.md" ]]         && mv -f "$RAW_DIR/report.md" "$ANALYSIS_DIR/report.md"
+if [[ -d "$RAW_DIR/plots" ]]; then
+  rm -rf "$ANALYSIS_DIR/plots"
+  mv "$RAW_DIR/plots" "$ANALYSIS_DIR/plots"
+fi
 
 echo ""
-echo "Done → raw: $RESULTS_DIR"
+echo "Done → raw: $RAW_DIR"
 echo "Done → processed: $PROCESSED_DIR"
-echo "Done → final: $FINAL_RESULTS_DIR"
+echo "Done → analysis: $ANALYSIS_DIR"
