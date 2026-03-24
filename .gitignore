@@ -17,6 +17,20 @@ node_modules
 .next/
 out/
 
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Python virtual envs
+.venv/
+venv/
+env/
+
 # Generic builds
 build
 coverage
@@ -56,6 +70,7 @@ temp
 # LaTeX
 # =========================================================
 paper/*.log
+paper/*.pdf
 *.aux
 *.bbl
 *.bcf
