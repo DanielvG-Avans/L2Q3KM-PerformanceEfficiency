@@ -4,4 +4,4 @@
   [puppeteer]   LCP=3108ms  FCP=3108ms  TBT=0ms  TTFB=23ms
   [puppeteer] 3/3 → http://192.168.1.241:3000/ssr/products
   [puppeteer]   LCP=3116ms  FCP=3116ms  TBT=0ms  TTFB=17ms
-  [puppeteer] ✓ Saved → results/20260324_160907/run_2_ssr.json
+  [puppeteer] ✓ Saved → data/runs/20260324_160907/raw/run_2_ssr.json

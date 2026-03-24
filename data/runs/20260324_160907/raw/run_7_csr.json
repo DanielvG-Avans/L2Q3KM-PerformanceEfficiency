@@ -1,9 +1,9 @@
 {
   "meta": {
-    "run": 5,
+    "run": 7,
     "condition": "csr",
     "url": "http://192.168.1.241:3000/csr",
-    "timestamp": "2026-03-24T15:24:15.022Z",
+    "timestamp": "2026-03-24T15:26:56.355Z",
     "pages_tested": [
       "/",
       "/about",
@@ -14,15 +14,15 @@
     {
       "page_index": 0,
       "path": "/",
-      "nav_ms": 8320,
+      "nav_ms": 8435,
       "metrics": {
-        "ttfb": 111.39999999850988,
-        "domContentLoaded": 6305.9000000003725,
-        "loadComplete": 6539,
+        "ttfb": 69.80000000074506,
+        "domContentLoaded": 6296.699999999255,
+        "loadComplete": 6496.5,
         "transferSize": 300,
-        "firstPaint": 6320,
-        "firstContentfulPaint": 6320,
-        "lcp": 6320,
+        "firstPaint": 6460,
+        "firstContentfulPaint": 6460,
+        "lcp": 6460,
         "tbt": 0,
         "cls": 0,
         "resources": [
@@ -30,55 +30,55 @@
             "name": "media/797e433ab948586e-s.p.0.q-h669a_dqa.woff2",
             "type": "link",
             "size_kb": 0,
-            "duration": 22
+            "duration": 24
           },
           {
             "name": "media/caa3a2e1cccd8315-s.p.16t1db8_9y2o~.woff2",
             "type": "link",
             "size_kb": 0,
-            "duration": 22
+            "duration": 33
           },
           {
             "name": "chunks/05ln3cv_i9.jl.css",
             "type": "link",
             "size_kb": 0,
-            "duration": 22
+            "duration": 43
           },
           {
             "name": "chunks/0ht900cau6_ur.js",
             "type": "link",
             "size_kb": 0,
-            "duration": 42
+            "duration": 54
           },
           {
             "name": "chunks/0p5.qr0b94vxo.js",
             "type": "script",
             "size_kb": 0,
-            "duration": 55
+            "duration": 66
           },
           {
             "name": "chunks/16g.ca89g7fib.js",
             "type": "script",
             "size_kb": 0,
-            "duration": 58
+            "duration": 67
           },
           {
             "name": "chunks/turbopack-0mbyzpf8xm.r7.js",
             "type": "script",
             "size_kb": 0,
-            "duration": 50
-          },
-          {
-            "name": "chunks/0x-1b2xcz76lw.js",
-            "type": "script",
-            "size_kb": 0,
-            "duration": 52
+            "duration": 57
           },
           {
             "name": "chunks/0dbhjjzl8qfwv.js",
             "type": "script",
             "size_kb": 0,
-            "duration": 52
+            "duration": 59
+          },
+          {
+            "name": "chunks/0x-1b2xcz76lw.js",
+            "type": "script",
+            "size_kb": 0,
+            "duration": 61
           }
         ],
         "jsHeap": {
@@ -90,15 +90,15 @@
     {
       "page_index": 1,
       "path": "/about",
-      "nav_ms": 4571,
+      "nav_ms": 4535,
       "metrics": {
-        "ttfb": 10.699999999254942,
-        "domContentLoaded": 3067.10000000149,
-        "loadComplete": 3068.9000000003725,
+        "ttfb": 41.100000001490116,
+        "domContentLoaded": 3063.5999999996275,
+        "loadComplete": 3065.2000000011176,
         "transferSize": 2485,
-        "firstPaint": 3128,
-        "firstContentfulPaint": 3128,
-        "lcp": 3128,
+        "firstPaint": 3112,
+        "firstContentfulPaint": 3112,
+        "lcp": 3112,
         "tbt": 0,
         "cls": 0,
         "resources": [
@@ -160,15 +160,15 @@
     {
       "page_index": 2,
       "path": "/products",
-      "nav_ms": 4546,
+      "nav_ms": 4558,
       "metrics": {
-        "ttfb": 54.90000000037253,
-        "domContentLoaded": 3059.2000000011176,
-        "loadComplete": 3060.5999999996275,
+        "ttfb": 33,
+        "domContentLoaded": 3069.800000000745,
+        "loadComplete": 3071.800000000745,
         "transferSize": 2485,
-        "firstPaint": 3104,
-        "firstContentfulPaint": 3104,
-        "lcp": 3104,
+        "firstPaint": 3120,
+        "firstContentfulPaint": 3120,
+        "lcp": 3120,
         "tbt": 0,
         "cls": 0,
         "resources": [
@@ -230,15 +230,15 @@
   ],
   "errors": [],
   "energy": {
-    "trace_path": "results/20260324_160907/run_5_csr.perfetto-trace",
-    "battery_csv_path": "results/20260324_160907/run_5_csr.battery.csv",
-    "energy_total_mj": 36862.78,
-    "avg_current_ma": 366.57,
-    "avg_voltage_v": 3.841,
-    "duration_s": 26.2,
+    "trace_path": "data/runs/20260324_160907/raw/run_7_csr.perfetto-trace",
+    "battery_csv_path": "data/runs/20260324_160907/raw/run_7_csr.battery.csv",
+    "energy_total_mj": 44314.49,
+    "avg_current_ma": 428.65,
+    "avg_voltage_v": 3.844,
+    "duration_s": 26.6,
     "sample_count": 23,
-    "avg_power_mw": 1407.2,
-    "avg_cpu_freq_mhz": 978.9,
+    "avg_power_mw": 1666.1,
+    "avg_cpu_freq_mhz": 981.0,
     "cpu_big_core_pct": 25.1,
     "peak_memory_rss_kb": null,
     "frame_janks": 0,

@@ -4,4 +4,4 @@
   [puppeteer]   LCP=3128ms  FCP=3128ms  TBT=0ms  TTFB=72ms
   [puppeteer] 3/3 → http://192.168.1.241:3000/csr/products
   [puppeteer]   LCP=3116ms  FCP=3116ms  TBT=0ms  TTFB=42ms
-  [puppeteer] ✓ Saved → results/20260324_160907/run_10_csr.json
+  [puppeteer] ✓ Saved → data/runs/20260324_160907/raw/run_10_csr.json
