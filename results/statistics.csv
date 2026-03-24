@@ -1,0 +1,12 @@
+metric,n_ssr,n_csr,median_ssr,iqr_ssr,median_csr,iqr_csr,u_stat,p_value,effect_r,effect_magnitude,direction
+Total energy,5,5,26142.96,2401.74,36862.78,17617.64,9.0,0.54762,0.28,small,SSR lower
+Average power,5,5,1040.9,58.8,1407.2,636.6,8.0,0.42063,0.36,medium,SSR lower
+LCP — cold load,4,5,6398.0,56.0,6356.0,108.0,12.0,0.73016,-0.2,small,CSR lower
+FCP — cold load,4,5,6398.0,56.0,6356.0,108.0,12.0,0.73016,-0.2,small,CSR lower
+TTFB — cold load,4,5,69.95,32.35,94.1,25.1,8.0,0.73016,0.2,small,SSR lower
+Total Blocking Time (all pages),4,5,0.0,0.0,0.0,0.0,10.0,1.0,0.0,negligible,CSR lower
+CLS — cold load,4,5,0.0,0.0,0.0,0.0,10.0,1.0,0.0,negligible,CSR lower
+Transfer size (all pages),4,5,5.15,0.0,5.15,0.0,10.0,1.0,0.0,negligible,CSR lower
+JS heap peak,4,5,16.3,0.27,9.5,0.0,20.0,0.00928,-1.0,large,CSR lower
+Avg CPU frequency,5,5,1058.7,32.6,981.0,5.7,20.0,0.15079,-0.6,large,CSR lower
+Frame janks,5,5,0.0,0.0,0.0,0.0,12.5,1.0,0.0,negligible,CSR lower

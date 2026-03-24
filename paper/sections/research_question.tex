@@ -1,0 +1,29 @@
+\section{Research Gap and Questions}
+
+The literature shows that SSR and CSR are extensively compared on speed-related metrics (such as TTI and LCP) and SEO outcomes. Resource-related metrics, including CPU and memory behavior on mobile client devices, are less often treated as the primary evaluation criterion. In addition, energy consumption is frequently discussed indirectly and rarely measured in direct relation to rendering strategy.
+
+This creates a clear research gap: there is limited controlled evidence comparing SSR and CSR with resource efficiency as the central focus in a mobile context.
+
+\textbf{Main question:}
+
+How does the choice between server-side rendering (SSR) and client-side rendering (CSR) affect CPU and memory usage on mobile client devices during the render process, and what does this mean for developing resource-efficient frontends?
+
+\textbf{Sub-questions:}
+
+\begin{enumerate}
+	\item What are the technical differences between SSR and CSR regarding client-side processing during the render process, particularly in relation to JavaScript execution and DOM manipulation?
+	\item How does CPU usage differ between SSR and CSR across varying data sizes (from small to large datasets) in identical web applications on mobile devices?
+	\item How does memory usage, specifically JavaScript Heap allocation, differ between SSR and CSR under the same conditions?
+	\item To what extent can CPU usage metrics (average utilization and active time) serve as reliable indicators for estimating energy consumption on mobile devices across different rendering scenarios?
+	\item In which scenarios (page complexity, data volume, network conditions) does each rendering strategy demonstrate better resource efficiency on mobile devices?
+\end{enumerate}
+
+\subsection*{Working Expectation}
+
+Based on the literature and technical analysis, this study expects that server-side rendering will on average be more resource-efficient on mobile devices compared to client-side rendering, particularly as data volumes increase. The primary reason is that with SSR, the largest part of the HTML is generated on the server, so the client only needs to parse and display it. With CSR, JavaScript must first be executed to dynamically generate HTML and place it in the DOM. Research by Clapton et al. (2025) demonstrates that this difference becomes increasingly pronounced with larger datasets (ranging from 498 KB to 26 MB), with JavaScript Heap usage increasing significantly for CSR as data size increases. Similarly, Gaddam (2025) reports that SSR implementations achieve 28.7\% reduction in memory consumption and 31.2\% reduction in CPU usage compared to CSR, particularly during the render phase.
+
+However, CSR could prove more efficient in certain scenarios. With SSR, extra data is often sent from the server in the form of serialized JavaScript objects (such as with the React inflight protocol in Next.js), which can increase network traffic and require additional processing on the client side to parse and hydrate the application state. Additionally, network architecture can affect results: with SSR, the application server is typically close to the database, enabling faster data retrieval. With CSR, separate API calls from the client can introduce additional latency and processing overhead on the device.
+
+Regarding energy consumption specifically, Thiagarajan et al. (2012) demonstrated that JavaScript and CSS processing in the browser significantly influences mobile device energy consumption, and that complex JavaScript can be as expensive to render as images. This foundational research supports the hypothesis that rendering strategies directly affect mobile device energy efficiency. However, Kalliola and Vepsäläinen (2025) emphasize that CPU-based measurements are the most reliable proxy for energy consumption estimation on client devices.
+
+Furthermore, CSR does offer advantages in hosting architecture. A fully client-side application can be statically hosted via a CDN, requiring no server-side computation, though this must be weighed against the increased client-side processing burden.

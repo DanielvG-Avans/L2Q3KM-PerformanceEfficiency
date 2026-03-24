@@ -1,0 +1,32 @@
+\section{Research Design \& Methods}
+
+To investigate the effect of SSR and CSR on CPU and memory usage on mobile devices, a controlled experimental approach was used. The objective was to isolate the difference between both render strategies while minimizing confounding factors.
+
+The study started with a literature review to analyze existing insights on render strategies, CPU usage, and energy consumption. A problem analysis was then conducted to distinguish performance as speed from performance as resource efficiency.
+
+One web application was implemented in two variants: server-side rendering (SSR) and client-side rendering (CSR). Both variants had the same functionality, dataset, and user interactions. The render strategy was the only intentional difference between conditions, enabling direct comparison.
+
+During the test phase, the application was hosted on a server in the same network as the mobile test device. CPU usage and memory usage were measured during initial rendering and during interaction events. Measurements were repeated across multiple runs to reduce the impact of outliers.
+
+A benchmark procedure was applied to compare SSR and CSR outcomes directly. The resulting dataset was analyzed with descriptive statistics to identify average differences and recurring patterns.
+
+\textbf{Methods table:}
+
+{\small
+\setlength{\tabcolsep}{4pt}
+\noindent\begin{tabularx}{\dimexpr\linewidth-10pt\relax}{@{}>{\RaggedRight\arraybackslash}p{2.4cm}>{\RaggedRight\arraybackslash}p{2.6cm}>{\RaggedRight\arraybackslash}p{1.5cm}>{\RaggedRight\arraybackslash}X@{}}
+\hline
+Phase & Method & Type & Purpose \\
+\hline
+Orientation & Literature study & Library & Substantiating SSR and CSR insights \\
+Orientation & Best practices analysis & Library & Gaining insight into existing optimization strategies \\
+Analysis & Problem analysis & Field & Performance vs resource efficiency \\
+Analysis & Domain modelling & Field & Modelling architectural differences \\
+Design & Prototyping & Workshop & Building the application \\
+Test phase & Non-functional test & Lab & Measuring CPU and memory usage \\
+Test phase & Benchmark test & Showroom & Directly comparing SSR vs CSR \\
+Analysis & Descriptive statistics & Field & Calculating averages and differences \\
+Validation & Peer review & Showroom & Checking method and interpretation \\
+\hline
+\end{tabularx}
+}
