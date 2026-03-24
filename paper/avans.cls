@@ -96,12 +96,14 @@
 \fi
 
 % --- Fonts ---
-% TeX Gyre Heros: free Frutiger/Helvetica substitute --- used for all headings
-\RequirePackage{tgheros}
-% TeX Gyre Pagella: Palatino-like serif --- comfortable for long body text
+% Helvetica-like sans for headings/metadata (closest widely available fallback)
+\RequirePackage[scaled=0.94]{helvet}
+% TeX Gyre Pagella: humanist serif for comfortable body reading
 \RequirePackage{tgpagella}
-% Mono: inconsolata for code listings
-\RequirePackage[scaled=0.88]{inconsolata}
+
+% Keep only two primary families in document styling:
+% sans (headings/metadata) and serif (body).
+\renewcommand{\sfdefault}{phv}
 
 % Use TeX Gyre Pagella (serif) as the default document font family for body text readability
 \renewcommand{\familydefault}{\rmdefault}  % serif body by default
@@ -131,8 +133,6 @@
 \definecolor{AvansRed}{HTML}{CF0A2C}        % Primary Red — punctuation and accents
 \definecolor{AvansBlack}{HTML}{1A1A1A}      % Near-black — body text, bold display
 \definecolor{AvansGray}{HTML}{6B6B6B}       % Mid-grey — secondary text, metadata
-\definecolor{AvansMidGray}{HTML}{BFBFBF}    % Mid gray — borders for code/listing frames
-\definecolor{AvansLightGray}{HTML}{F7F7F7}  % Light gray — subtle backgrounds
 \definecolor{AvansRuleGray}{HTML}{E0E0E0}   % Rule grey — thin dividers only
 \definecolor{AvansWhite}{HTML}{FFFFFF}      % White — backgrounds
 
@@ -186,15 +186,15 @@
 \RequirePackage{listings}
 \lstset{
 	basicstyle   = \ttfamily\small,
-	keywordstyle = \bfseries\color{AvansRed},
+	keywordstyle = \bfseries\color{AvansBlack},
 	commentstyle = \itshape\color{AvansGray},
-	stringstyle  = \color{AvansRed!80!black},
+	stringstyle  = \color{AvansBlack},
 	numbers      = left,
 	numberstyle  = \tiny\color{AvansGray},
 	numbersep    = 8pt,
 	frame        = single,
-	rulecolor    = \color{AvansMidGray},
-	backgroundcolor = \color{AvansLightGray},
+	rulecolor    = \color{AvansRuleGray},
+	backgroundcolor = \color{AvansWhite},
 	breaklines   = true,
 	breakatwhitespace = true,
 	showstringspaces = false,
@@ -212,6 +212,9 @@
 % ============================================================
 %  2. METADATA STORAGE
 % ============================================================
+\newcommand{\@subtitle}{}
+\newcommand{\subtitle}[1]{\renewcommand{\@subtitle}{#1}}
+
 \newcommand{\@studentnumber}{}
 \newcommand{\studentnumber}[1]{\renewcommand{\@studentnumber}{#1}}
 
@@ -231,8 +234,16 @@
 %  3. TYPOGRAPHY --- BODY TEXT
 % ============================================================
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{8pt plus 2pt minus 1pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
 \setstretch{1.15}
+\AtBeginDocument{\color{AvansBlack}\RaggedRight}
+
+% Breathing room around figures/tables to avoid crowded pages.
+\setlength{\intextsep}{14pt plus 4pt minus 2pt}
+\setlength{\textfloatsep}{16pt plus 4pt minus 2pt}
+\setlength{\floatsep}{14pt plus 3pt minus 2pt}
+\setlength{\abovecaptionskip}{6pt}
+\setlength{\belowcaptionskip}{4pt}
 
 % ============================================================
 %  4. SECTION HEADINGS — Avans Visual Style Guide compliant
@@ -330,6 +341,7 @@
 }
 
 % Header left: section name (small, mid-grey, sans)
+\renewcommand{\sectionmark}[1]{\markboth{\thesection\enspace #1}{}}
 \fancyhead[L]{%
 	\small\sffamily\color{AvansGray}\leftmark
 }
@@ -394,6 +406,12 @@
 		% --- Title (bold sans, large, dark) ---
 		{\fontsize{32}{40}\selectfont\sffamily\bfseries\color{AvansBlack}\@title\par}
 		
+		% --- Optional subtitle in medium sans, mid-grey ---
+		\ifthenelse{\equal{\@subtitle}{}}{}{%
+			\vspace{6pt}%
+			{\normalsize\sffamily\mdseries\color{AvansGray}\@subtitle\par}%
+		}%
+
 		% --- Programme info (if present) ---
 		\ifthenelse{\equal{\@programme}{}}{}{%
 			\vspace{6pt}%
@@ -484,6 +502,7 @@
 \renewcommand{\bottomrule}{\color{AvansRuleGray}\specialrule{0.8pt}{2pt}{0pt}\color{AvansBlack}}
 
 % Table header style command
+\newcommand{\tablehead}[1]{\textsf{\bfseries\small\color{AvansGray}\MakeUppercase{#1}}}
 \newcommand{\tableheadrow}{%
 	\rowcolor{white}%
 	\bfseries\sffamily\small\color{AvansGray}%
