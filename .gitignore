@@ -1,8 +1,8 @@
 # =========================================================
 # Dependencies / Package Managers
 # =========================================================
-/node_modules
-/.pnp
+node_modules
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -14,12 +14,26 @@
 # Build Output / Caches
 # =========================================================
 # Next.js
-/.next/
-/out/
+.next/
+out/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Python virtual envs
+.venv/
+venv/
+env/
 
 # Generic builds
-/build
-/coverage
+build
+coverage
 
 # TypeScript
 *.tsbuildinfo
@@ -44,7 +58,7 @@ yarn-error.log*
 # =========================================================
 .DS_Store
 *.pem
-/temp
+temp
 *.tmp
 *.temp
 *.bak
@@ -55,9 +69,12 @@ yarn-error.log*
 # =========================================================
 # LaTeX
 # =========================================================
+paper/*.log
+paper/*.pdf
 *.aux
 *.bbl
 *.bcf
+*.brf
 *.blg
 *.fdb_latexmk
 *.fls
@@ -65,7 +82,6 @@ yarn-error.log*
 *.ilg
 *.ind
 *.lof
-*.log
 *.lot
 *.nav
 *.out

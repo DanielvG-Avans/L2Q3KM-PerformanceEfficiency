@@ -1,23 +1,27 @@
-# Research Paper Repository
+# Research Project Repository
 
-This repository contains all deliverables for the Performance Efficiency research project.
+This repository contains the full SSR vs CSR performance and energy study: experiment scripts, run-batch data, analysis code, and paper assets.
 
 ## Repository Structure
 
-- `Proposal/`: Proposal document and supporting planning material.
-- `Prototype/`: Next.js prototype used for demonstrations and implementation work.
-- `Paper/`: Final research manuscript, assets, references, and exported PDF.
+- `experiment/`: Measurement runner (`run.sh`), Perfetto config, Puppeteer scenario scripts, and benchmark dependencies.
+- `prototype/`: Next.js SSR/CSR prototype app.
+- `data/runs/`: One folder per benchmark batch (`YYYYMMDD_HHMMSS/`) with `raw/`, `processed/`, and `analysis/` outputs together.
+- `analysis/`: Python analysis scripts (`extract_energy.py`, `analyze_runs.py`) and compatibility wrappers.
+- `paper/`: LaTeX manuscript and references.
+- `docs/`: Proposal and supporting notes.
 
-## Quick Start (Prototype)
+## Quick Start
 
 ```bash
-cd Prototype
+# prototype app
+cd prototype
 npm install
 npm run dev
+
+# benchmark runner
+cd ../experiment
+npm install
+pip install -r requirements.txt
+bash run.sh --ssr-url http://YOUR_IP:3000 --csr-url http://YOUR_IP:3001 --runs 5
 ```
-
-The app runs locally at `http://localhost:3000`.
-
-## Notes
-
-- Possibly use Cypress for testing the prototype. I don't know if it has performance testing and energy monitoring capabilities, but it may be worth exploring.

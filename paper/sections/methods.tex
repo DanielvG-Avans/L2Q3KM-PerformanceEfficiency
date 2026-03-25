@@ -1,0 +1,35 @@
+\section{Research Design \& Methods}
+
+To investigate the effect of SSR and CSR on CPU and memory usage on mobile devices, a controlled experimental approach was used. The objective was to isolate the difference between both render strategies while minimizing confounding factors.
+
+The study started with a literature review to analyze existing insights on render strategies, CPU usage, and energy consumption. A problem analysis was then conducted to distinguish performance as speed from performance as resource efficiency.
+
+One web application was implemented in two variants: server-side rendering (SSR) and client-side rendering (CSR). Both variants had the same functionality, dataset, and user interactions. The render strategy was the only intentional difference between conditions, enabling direct comparison.
+
+During the test phase, the application was hosted on a server in the same network as the mobile test device. CPU usage and memory usage were measured during initial rendering and during interaction events. Measurements were repeated across multiple runs to reduce the impact of outliers.
+
+SSR and CSR were compared directly using a benchmark protocol. The dataset was then analyzed with descriptive statistics and a two-sided Mann-Whitney U test ($\alpha = 0.05$), with Bonferroni correction for multiple comparisons.
+
+\begin{table}[htbp]
+\centering
+\caption{Method overview used in this study.}
+\label{tab:method-overview-2026}
+{\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}>{\RaggedRight\arraybackslash}p{2.3cm}>{\RaggedRight\arraybackslash}p{2.6cm}>{\RaggedRight\arraybackslash}p{1.9cm}>{\RaggedRight\arraybackslash}X@{}}
+\toprule
+\tablehead{Phase} & \tablehead{Method} & \tablehead{Type} & \tablehead{Purpose} \\
+\midrule
+Orientation & Literature study & Library & Establishing the known SSR and CSR performance landscape \\
+Orientation & Best-practices analysis & Library & Identifying practical optimization factors for fair implementation \\
+Analysis & Problem analysis & Field & Defining performance as resource efficiency instead of only speed \\
+Analysis & Domain modelling & Field & Mapping architectural differences between render strategies \\
+Design & Prototyping & Workshop & Building two functionally equivalent application variants \\
+Test phase & Non-functional test & Lab & Measuring CPU and memory behavior under controlled conditions \\
+Test phase & Benchmark test & Showroom & Comparing SSR and CSR outcomes directly across repeated runs \\
+Analysis & Statistical analysis & Field & Computing medians, IQR, effect size, and significance tests \\
+Validation & Peer review & Showroom & Checking method quality and interpretation consistency \\
+\bottomrule
+\end{tabularx}
+}
+\end{table}

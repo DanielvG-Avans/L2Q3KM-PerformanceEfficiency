@@ -30,3 +30,7 @@
 *.gz binary
 *.7z binary
 *.rar binary
+
+# Benchmark artifacts
+*.perfetto-trace binary
+*.pbtxt text eol=lf
