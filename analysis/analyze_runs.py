@@ -193,7 +193,7 @@ def main():
         "## Methodology notes",
         "",
         "- All runs interleaved in randomised order to prevent thermal session bias.",
-        "- Chrome cleared via `pm clear com.android.chrome` before each run (cold JIT, cold cache).",
+        "- Chrome force-stopped before each run; no app-data wipe between runs.",
         "- Screen brightness fixed at 120/255 (manual mode) throughout.",
         "- Device radios: WiFi only (mobile data, Bluetooth, NFC disabled).",
         "- Device idle ≥45s between runs; runs discarded if start temp >37°C.",

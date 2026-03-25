@@ -29,7 +29,7 @@ RUN_ROOT_DIR="../data/runs/${RUN_ID}"
 RAW_DIR="${RUN_ROOT_DIR}/raw"
 PROCESSED_DIR="${RUN_ROOT_DIR}/processed"
 ANALYSIS_DIR="${RUN_ROOT_DIR}/analysis"
-DEVICE_ID="RZCT401NHBN"
+DEVICE_ID="${DEVICE_ID:-}"
 BATTERY_POLL_PID=""
 
 echo "=== SSR vs CSR Energy Benchmark ==="
@@ -40,6 +40,7 @@ while [[ $# -gt 0 ]]; do
     --ssr-url) SSR_URL="$2"; shift 2 ;;
     --csr-url) CSR_URL="$2"; shift 2 ;;
     --runs)    RUNS="$2";    shift 2 ;;
+    --device-id) DEVICE_ID="$2"; shift 2 ;;
     *) echo "Unknown argument: $1"; exit 1 ;;
   esac
 done
@@ -48,6 +49,26 @@ done
   echo "ERROR: --ssr-url and --csr-url are required"
   exit 1
 }
+
+if [[ -z "$DEVICE_ID" ]]; then
+  DEVICE_LINES=$(adb devices | awk 'NR>1 && $2=="device" {print $1}')
+  DEVICE_COUNT=$(echo "$DEVICE_LINES" | sed '/^$/d' | wc -l | tr -d ' ')
+
+  if [[ "$DEVICE_COUNT" -eq 1 ]]; then
+    DEVICE_ID=$(echo "$DEVICE_LINES" | head -n 1)
+  elif [[ "$DEVICE_COUNT" -eq 0 ]]; then
+    echo "ERROR: no connected Android device found."
+    echo "Tip: connect a device and run 'adb devices', or pass --device-id <serial>."
+    exit 1
+  else
+    echo "ERROR: multiple devices connected; specify --device-id <serial>."
+    echo "Connected devices:"
+    echo "$DEVICE_LINES"
+    exit 1
+  fi
+fi
+
+echo "Using device: $DEVICE_ID"
 
 mkdir -p "$RAW_DIR" "$PROCESSED_DIR" "$ANALYSIS_DIR"
 

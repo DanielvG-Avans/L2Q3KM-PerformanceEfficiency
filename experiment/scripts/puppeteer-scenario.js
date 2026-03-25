@@ -26,7 +26,12 @@ const { execSync } = require("child_process");
 // ── Parse args ────────────────────────────────────────────────────────────────
 const argv = {};
 for (let i = 2; i < process.argv.length - 1; i += 2) {
-  argv[process.argv[i].replace("--", "")] = process.argv[i + 1];
+  const rawKey = process.argv[i].replace("--", "");
+  argv[rawKey] = process.argv[i + 1];
+
+  // Accept both kebab-case and camelCase (e.g. --device-id and --deviceId).
+  const camelKey = rawKey.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  argv[camelKey] = process.argv[i + 1];
 }
 const { url, condition, run, out, deviceId } = argv;
 if (!url || !condition || !run || !out) {
@@ -42,11 +47,10 @@ const ADB_PREFIX = deviceId ? `adb -s "${deviceId}"` : "adb";
 // These must exist in BOTH your SSR and CSR apps.
 // Keep the list at 3 pages: 1 cold load + 2 navigations is enough to capture
 // both the initial-load advantage (SSR) and subsequent-navigation behaviour (CSR).
-const PAGES = [
-  "/", // Home — cold load
-  "/about", // Page 2 — first navigation
-  "/products", // Page 3 — second navigation
-];
+const PAGES = (argv.pages || "/,/ssr,/csr")
+  .split(",")
+  .map((p) => p.trim())
+  .filter(Boolean);
 
 const DWELL_MS = 1000; // Time to "read" each page before navigating
 const LOAD_TIMEOUT_MS = 30000;
