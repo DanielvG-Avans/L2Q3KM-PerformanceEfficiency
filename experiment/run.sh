@@ -7,7 +7,10 @@ set -euo pipefail
 # Usage:
 #   bash run.sh --ssr-url http://192.168.x.x:3000 \
 #               --csr-url http://192.168.x.x:3001 \
-#                   --runs 30
+#               --runs 30 \
+#               --scenarios static,dynamic,massive \
+#               --ssr-pages '/ssr?scenario={scenario}' \
+#               --csr-pages '/csr?scenario={scenario}'
 #
 # What this does:
 #   1. Generates a randomised interleaved run order (prevents thermal bias)
@@ -21,6 +24,9 @@ set -euo pipefail
 RUNS=30
 SSR_URL=""
 CSR_URL=""
+SCENARIOS="static,dynamic,massive"
+SSR_PAGES="/ssr?scenario={scenario}"
+CSR_PAGES="/csr?scenario={scenario}"
 MAX_TEMP_C=37
 COOL_WAIT_S=45
 BATTERY_POLL_S=1
@@ -40,6 +46,9 @@ while [[ $# -gt 0 ]]; do
     --ssr-url) SSR_URL="$2"; shift 2 ;;
     --csr-url) CSR_URL="$2"; shift 2 ;;
     --runs)    RUNS="$2";    shift 2 ;;
+    --scenarios) SCENARIOS="$2"; shift 2 ;;
+    --ssr-pages) SSR_PAGES="$2"; shift 2 ;;
+    --csr-pages) CSR_PAGES="$2"; shift 2 ;;
     --device-id) DEVICE_ID="$2"; shift 2 ;;
     *) echo "Unknown argument: $1"; exit 1 ;;
   esac
@@ -143,28 +152,40 @@ adb -s "$DEVICE_ID" forward tcp:9222 localabstract:chrome_devtools_remote
 # ── Randomized run order ─────────────────────────────────────────
 python3 - <<EOF > "$RAW_DIR/run_order.txt"
 import random
+
 runs = $RUNS
-conds = ['ssr'] * runs + ['csr'] * runs
-random.shuffle(conds)
-print("\n".join(conds))
+scenarios = [s.strip() for s in "$SCENARIOS".split(",") if s.strip()]
+if not scenarios:
+  raise SystemExit("No scenarios configured. Pass --scenarios static,dynamic,massive")
+
+cases = []
+for scenario in scenarios:
+  cases.extend([("ssr", scenario)] * runs)
+  cases.extend([("csr", scenario)] * runs)
+
+random.shuffle(cases)
+for condition, scenario in cases:
+  print(f"{condition},{scenario}")
 EOF
 
 echo "run,condition,temp_c,timestamp" > "$RAW_DIR/temperatures.csv"
 
 RUN_NUM=0
 
-while IFS= read -r CONDITION <&3; do
+while IFS=, read -r CONDITION SCENARIO <&3; do
   RUN_NUM=$((RUN_NUM + 1))
   URL=$([[ "$CONDITION" == "ssr" ]] && echo "$SSR_URL" || echo "$CSR_URL")
+  PAGE_TEMPLATE=$([[ "$CONDITION" == "ssr" ]] && echo "$SSR_PAGES" || echo "$CSR_PAGES")
+  PAGES="${PAGE_TEMPLATE//\{scenario\}/$SCENARIO}"
 
-  TRACE_REMOTE="/data/misc/perfetto-traces/trace_${CONDITION}_${RUN_NUM}"
-  TRACE_LOCAL="$RAW_DIR/run_${RUN_NUM}_${CONDITION}.perfetto-trace"
-  METRICS_FILE="$RAW_DIR/run_${RUN_NUM}_${CONDITION}.json"
-  BATTERY_CSV="$RAW_DIR/run_${RUN_NUM}_${CONDITION}.battery.csv"
+  TRACE_REMOTE="/data/misc/perfetto-traces/trace_${CONDITION}_${SCENARIO}_${RUN_NUM}"
+  TRACE_LOCAL="$RAW_DIR/run_${RUN_NUM}_${CONDITION}_${SCENARIO}.perfetto-trace"
+  METRICS_FILE="$RAW_DIR/run_${RUN_NUM}_${CONDITION}_${SCENARIO}.json"
+  BATTERY_CSV="$RAW_DIR/run_${RUN_NUM}_${CONDITION}_${SCENARIO}.battery.csv"
 
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "Run $RUN_NUM ($CONDITION)"
+  echo "Run $RUN_NUM ($CONDITION / $SCENARIO)"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   # ── 1. Cooldown + temperature check ────────────────────────────
@@ -212,14 +233,14 @@ while IFS= read -r CONDITION <&3; do
   # ── 4. Run Puppeteer scenario ──────────────────────────────────
   adb -s "$DEVICE_ID" shell "echo 'chrome --remote-debugging-port=9222' > /data/local/tmp/chrome-command-line"
   adb -s "$DEVICE_ID" forward tcp:9222 localabstract:chrome_devtools_remote 2>/dev/null || true
-  adb -s "$DEVICE_ID" shell am start -a android.intent.action.VIEW -d "$URL" >/dev/null 2>&1 || true
-  sleep 2
 
   node scripts/puppeteer-scenario.js \
     --url "$URL" \
     --condition "$CONDITION" \
+    --scenario "$SCENARIO" \
     --run "$RUN_NUM" \
     --device-id "$DEVICE_ID" \
+    --pages "$PAGES" \
     --out "$METRICS_FILE" \
     2>&1 | tee "$RAW_DIR/run_${RUN_NUM}_${CONDITION}.log"
 

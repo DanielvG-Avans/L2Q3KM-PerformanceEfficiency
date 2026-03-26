@@ -283,6 +283,7 @@ def main():
         rows.append({
             "run":       run_data["meta"]["run"],
             "condition": run_data["meta"]["condition"],
+            "scenario":  run_data["meta"].get("scenario", "default"),
             **energy,
         })
 
@@ -291,10 +292,10 @@ def main():
     df.to_csv(csv_path, index=False)
 
     print(f"\n[extract_energy] Energy CSV: {csv_path}")
-    print("\nSummary by condition:")
+    print("\nSummary by condition/scenario:")
     valid = df[df["energy_total_mj"].notna()]
     if not valid.empty:
-        print(valid.groupby("condition")[["energy_total_mj", "avg_power_mw", "avg_current_ma"]].describe().round(2))
+        print(valid.groupby(["condition", "scenario"])[["energy_total_mj", "avg_power_mw", "avg_current_ma"]].describe().round(2))
     else:
         print("  No valid energy data — check trace files and perfetto library installation")
 

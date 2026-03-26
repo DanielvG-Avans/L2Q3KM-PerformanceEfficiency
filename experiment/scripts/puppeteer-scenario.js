@@ -19,9 +19,9 @@
 //     --out data/runs/YYYYMMDD_HHMMSS/raw/run_1_ssr.json
 // =============================================================================
 
-const puppeteer = require("puppeteer-core");
-const fs = require("fs");
-const { execSync } = require("child_process");
+import { connect } from "puppeteer-core";
+import { writeFileSync } from "fs";
+import { execSync } from "child_process";
 
 // ── Parse args ────────────────────────────────────────────────────────────────
 const argv = {};
@@ -33,7 +33,7 @@ for (let i = 2; i < process.argv.length - 1; i += 2) {
   const camelKey = rawKey.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
   argv[camelKey] = process.argv[i + 1];
 }
-const { url, condition, run, out, deviceId } = argv;
+const { url, condition, scenario, run, out, deviceId } = argv;
 if (!url || !condition || !run || !out) {
   process.stderr.write(
     "Missing required args: --url --condition --run --out\n",
@@ -43,11 +43,16 @@ if (!url || !condition || !run || !out) {
 
 const ADB_PREFIX = deviceId ? `adb -s "${deviceId}"` : "adb";
 
-// ── Pages to navigate (edit these to match your app routes) ──────────────────
-// These must exist in BOTH your SSR and CSR apps.
-// Keep the list at 3 pages: 1 cold load + 2 navigations is enough to capture
-// both the initial-load advantage (SSR) and subsequent-navigation behaviour (CSR).
-const PAGES = (argv.pages || "/,/ssr,/csr")
+// ── Pages to navigate ─────────────────────────────────────────────────────────
+// Thesis-quality default: isolate each condition to its own route set.
+const defaultPagesByCondition = {
+  ssr: "/ssr",
+  csr: "/csr",
+};
+
+const pagesArg = argv.pages || defaultPagesByCondition[condition] || "/";
+
+const PAGES = pagesArg
   .split(",")
   .map((p) => p.trim())
   .filter(Boolean);
@@ -138,6 +143,7 @@ async function waitForCdpReady(timeoutMs) {
     meta: {
       run: parseInt(run),
       condition,
+      scenario: scenario || "default",
       url,
       timestamp: new Date().toISOString(),
       pages_tested: PAGES,
@@ -167,12 +173,18 @@ async function waitForCdpReady(timeoutMs) {
     }
 
     // Connect to Chrome on device via DevTools Protocol.
-    // Chrome must have been opened at least once after pm clear.
-    // run.sh opens Chrome by navigating to the URL, which is fine.
-    browser = await puppeteer.connect({
+    browser = await connect({
       browserURL: "http://localhost:9222",
       defaultViewport: { width: 390, height: 844 }, // Mobile viewport
     });
+
+    // Close pre-existing tabs so each run starts from one controlled page.
+    const existingPages = await browser.pages();
+    await Promise.all(
+      existingPages.map((p) =>
+        p.close({ runBeforeUnload: false }).catch(() => {}),
+      ),
+    );
 
     const page = await browser.newPage();
 
@@ -274,6 +286,6 @@ async function waitForCdpReady(timeoutMs) {
     }
   }
 
-  fs.writeFileSync(out, JSON.stringify(result, null, 2));
+  writeFileSync(out, JSON.stringify(result, null, 2));
   process.stdout.write(`  [puppeteer] ✓ Saved → ${out}\n`);
 })();

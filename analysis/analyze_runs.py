@@ -34,6 +34,7 @@ def load_data(raw_dir: Path) -> pd.DataFrame:
         row = {
             "run":       d["meta"]["run"],
             "condition": d["meta"]["condition"],
+            "scenario":  d["meta"].get("scenario", "default"),
         }
 
         # Energy
@@ -122,9 +123,8 @@ def main():
     if df.empty:
         print("[analyze_runs] No data."); sys.exit(1)
 
-    ssr = df[df["condition"] == "ssr"]
-    csr = df[df["condition"] == "csr"]
-    print(f"[analyze_runs] {len(ssr)} SSR runs, {len(csr)} CSR runs loaded")
+    scenarios = sorted(df["scenario"].dropna().unique())
+    print(f"[analyze_runs] Loaded {len(df)} runs across scenarios: {', '.join(scenarios)}")
 
     metrics = [
         ("energy_total_mj",  "Total energy",              "mJ"),
@@ -144,17 +144,37 @@ def main():
     plots_dir = rd / "plots"; plots_dir.mkdir(exist_ok=True)
     results = []
 
-    for col, label, unit in metrics:
-        if col not in df.columns or df[col].dropna().empty:
-            continue
-        r = mann_whitney(ssr[col], csr[col], label)
-        results.append(r)
-        if "p_value" in r:
-            print(f"  {label:35s} SSR={r['median_ssr']:8.1f}  CSR={r['median_csr']:8.1f}  "
-                  f"p={r['p_value']:.4f}  r={r['effect_r']:.3f} ({r['effect_magnitude']})")
-        try:
-            boxplot(ssr[col], csr[col], label, unit, str(plots_dir / f"{col}.png"))
-        except Exception: pass
+    for scenario in scenarios:
+        ssr = df[(df["condition"] == "ssr") & (df["scenario"] == scenario)]
+        csr = df[(df["condition"] == "csr") & (df["scenario"] == scenario)]
+
+        print(f"[analyze_runs] Scenario '{scenario}': {len(ssr)} SSR runs, {len(csr)} CSR runs")
+
+        for col, label, unit in metrics:
+            if col not in df.columns or df[col].dropna().empty:
+                continue
+
+            r = mann_whitney(ssr[col], csr[col], label)
+            r["scenario"] = scenario
+            results.append(r)
+
+            if "p_value" in r:
+                print(
+                    f"  [{scenario}] {label:27s} SSR={r['median_ssr']:8.1f}  "
+                    f"CSR={r['median_csr']:8.1f}  p={r['p_value']:.4f}  "
+                    f"r={r['effect_r']:.3f} ({r['effect_magnitude']})"
+                )
+
+            try:
+                boxplot(
+                    ssr[col],
+                    csr[col],
+                    f"{label} ({scenario})",
+                    unit,
+                    str(plots_dir / f"{scenario}_{col}.png"),
+                )
+            except Exception:
+                pass
 
     # ── Save stats ─────────────────────────────────────────────────────────────
     stats_df = pd.DataFrame(results)
@@ -175,14 +195,15 @@ def main():
         "",
         "## Results table",
         "",
-        "| Metric | SSR median (IQR) | CSR median (IQR) | *p* | Effect *r* | Sig |",
-        "|--------|-----------------|-----------------|-----|-----------|-----|",
+        "| Scenario | Metric | SSR median (IQR) | CSR median (IQR) | *p* | Effect *r* | Sig |",
+        "|----------|--------|------------------|------------------|-----|-----------|-----|",
     ]
     for r in results:
         if "p_value" not in r: continue
         sig = "✓" if r["p_value"] < alpha_b else "–"
         pstr = f"{r['p_value']:.4f}" if r["p_value"] >= 0.0001 else "<0.0001"
         lines.append(
+            f"| {r.get('scenario', 'default')} "
             f"| {r['metric']} "
             f"| {r['median_ssr']:.1f} (±{r['iqr_ssr']:.1f}) "
             f"| {r['median_csr']:.1f} (±{r['iqr_csr']:.1f}) "

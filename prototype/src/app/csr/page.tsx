@@ -1,21 +1,47 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { getInventory } from "@/data/mockData";
+import {
+  filterAndSortProducts,
+  getInventory,
+  normalizeQuery,
+  paginateProducts,
+  type BenchmarkQuery,
+} from "@/data/mockData";
 import { StoreFront } from "@/components/StoreFront";
 
-const allProducts = getInventory(); // In-memory constant
+const PAGE_SIZE = 40;
 
 export default function CSRPage() {
-  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState<BenchmarkQuery>(normalizeQuery());
 
-  const filtered = useMemo(() => {
-    return allProducts.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()),
-    );
-  }, [search]);
+  const inventory = useMemo(
+    () => getInventory(query.scenario),
+    [query.scenario],
+  );
+  const filtered = useMemo(
+    () => filterAndSortProducts(inventory, query),
+    [inventory, query],
+  );
+  const paged = useMemo(
+    () => paginateProducts(filtered, query.page, PAGE_SIZE),
+    [filtered, query.page],
+  );
+
+  const handleQueryChange = (updates: Partial<BenchmarkQuery>) => {
+    setQuery((prev) => ({ ...prev, ...updates }));
+  };
 
   return (
-    <StoreFront products={filtered} onSearch={setSearch} isClient={true} />
+    <StoreFront
+      products={paged.items}
+      query={query}
+      totalItems={filtered.length}
+      page={paged.page}
+      totalPages={paged.totalPages}
+      onQueryChange={handleQueryChange}
+      onPageChange={(nextPage) => handleQueryChange({ page: nextPage })}
+      isClient={true}
+    />
   );
 }

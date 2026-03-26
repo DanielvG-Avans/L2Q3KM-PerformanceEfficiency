@@ -24,16 +24,19 @@ ipconfig getifaddr en0
 bash run.sh \
   --ssr-url http://YOUR_IP:3000 \
   --csr-url http://YOUR_IP:3001 \
-  --runs 30
+  --runs 30 \
+  --scenarios static,dynamic,massive \
+  --ssr-pages '/ssr?scenario={scenario}' \
+  --csr-pages '/csr?scenario={scenario}'
 ```
 
 ---
 
 ## Before running — one manual step
 
-After `pm clear com.android.chrome` Chrome may show a "set as default browser"
-banner the very first time it opens. Dismiss it manually once, then it won't
-appear again during the benchmark (Puppeteer dismisses dialogs automatically).
+Chrome may show a "set as default browser" banner the first time it opens on a
+fresh device setup. Dismiss it manually once, then it won't appear again
+during the benchmark (Puppeteer dismisses dialogs automatically).
 
 To trigger it early:
 
@@ -45,19 +48,38 @@ adb shell am force-stop com.android.chrome
 
 ---
 
-## Edit your page routes
+## Configure scenario routes
 
-In `scripts/puppeteer-scenario.js` at line ~50:
+The runner supports placeholder substitution in page paths:
 
-```js
-const PAGES = [
-  "/", // cold load
-  "/about", // navigation 1
-  "/products", // navigation 2
-];
+- `{scenario}` is replaced with each value from `--scenarios`
+- defaults are:
+  - `--scenarios static,dynamic,massive`
+  - `--ssr-pages '/ssr?scenario={scenario}'`
+  - `--csr-pages '/csr?scenario={scenario}'`
+
+Examples:
+
+```bash
+# one route per case
+--ssr-pages '/ssr?scenario={scenario}'
+--csr-pages '/csr?scenario={scenario}'
+
+# multiple navigations per run
+--ssr-pages '/ssr?scenario={scenario},/ssr?scenario={scenario}&q=audio'
+--csr-pages '/csr?scenario={scenario},/csr?scenario={scenario}&q=audio'
 ```
 
-Change these to your actual app routes. Both apps must have the same routes.
+Each scenario gets exactly `--runs` SSR and `--runs` CSR runs, then all cases are shuffled into one interleaved sequence.
+
+### Why use `?scenario=` instead of separate pages?
+
+Using query parameters keeps the benchmark fair and easier to maintain:
+
+- Same page/component path for each mode, which reduces accidental implementation drift.
+- Scenario changes stay data-level (`static`, `dynamic`, `massive`) instead of route-level code differences.
+- Route templates in `run.sh` stay simple and deterministic with `{scenario}` substitution.
+- Results are more defensible: differences are more likely due to SSR vs CSR, not page-specific code.
 
 ## Output
 
