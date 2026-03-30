@@ -1,47 +1,34 @@
-"use client";
+import { normalizeQuery } from "@/data/mockData";
+import { CSRClientPage } from "@/components/CSRClientPage";
 
-import { useState, useMemo } from "react";
-import {
-  filterAndSortProducts,
-  getInventory,
-  normalizeQuery,
-  paginateProducts,
-  type BenchmarkQuery,
-} from "@/data/mockData";
-import { StoreFront } from "@/components/StoreFront";
+export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 40;
+const toSingleValue = (value?: string | string[]) => {
+  if (Array.isArray(value)) {
+    return value[0] || "";
+  }
 
-export default function CSRPage() {
-  const [query, setQuery] = useState<BenchmarkQuery>(normalizeQuery());
+  return value || "";
+};
 
-  const inventory = useMemo(
-    () => getInventory(query.scenario),
-    [query.scenario],
-  );
-  const filtered = useMemo(
-    () => filterAndSortProducts(inventory, query),
-    [inventory, query],
-  );
-  const paged = useMemo(
-    () => paginateProducts(filtered, query.page, PAGE_SIZE),
-    [filtered, query.page],
-  );
-
-  const handleQueryChange = (updates: Partial<BenchmarkQuery>) => {
-    setQuery((prev) => ({ ...prev, ...updates }));
+export default function CSRPage({
+  searchParams,
+}: {
+  searchParams: {
+    scenario?: string | string[];
+    q?: string | string[];
+    category?: string | string[];
+    sort?: string | string[];
+    page?: string | string[];
   };
+}) {
+  const initialQuery = normalizeQuery({
+    scenario: toSingleValue(searchParams.scenario),
+    q: toSingleValue(searchParams.q),
+    category: toSingleValue(searchParams.category),
+    sort: toSingleValue(searchParams.sort),
+    page: toSingleValue(searchParams.page),
+  });
 
-  return (
-    <StoreFront
-      products={paged.items}
-      query={query}
-      totalItems={filtered.length}
-      page={paged.page}
-      totalPages={paged.totalPages}
-      onQueryChange={handleQueryChange}
-      onPageChange={(nextPage) => handleQueryChange({ page: nextPage })}
-      isClient={true}
-    />
-  );
+  return <CSRClientPage initialQuery={initialQuery} />;
 }

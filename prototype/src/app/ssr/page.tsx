@@ -1,12 +1,12 @@
 import {
-  filterAndSortProducts,
+  buildStoreFrontView,
   getInventory,
   normalizeQuery,
-  paginateProducts,
 } from "@/data/mockData";
 import { StoreFront } from "@/components/StoreFront";
 
 const PAGE_SIZE = 40;
+export const dynamic = "force-dynamic";
 
 const toSingleValue = (value?: string | string[]) => {
   if (Array.isArray(value)) {
@@ -34,17 +34,17 @@ export default async function SSRPage({
     sort: toSingleValue(searchParams.sort),
     page: toSingleValue(searchParams.page),
   });
-  const allProducts = getInventory(query.scenario);
-  const filtered = filterAndSortProducts(allProducts, query);
-  const paged = paginateProducts(filtered, query.page, PAGE_SIZE);
+  const inventory = getInventory(query.scenario);
+  const view = buildStoreFrontView(inventory, query, PAGE_SIZE);
 
   return (
     <StoreFront
-      products={paged.items}
+      products={view.items}
       query={query}
-      totalItems={filtered.length}
-      page={paged.page}
-      totalPages={paged.totalPages}
+      totalItems={view.totalItems}
+      page={view.page}
+      totalPages={view.totalPages}
+      summary={view.summary}
       basePath="/ssr"
       isClient={false}
     />
