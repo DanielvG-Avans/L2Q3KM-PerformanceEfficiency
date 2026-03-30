@@ -35,6 +35,8 @@ def load_data(raw_dir: Path) -> pd.DataFrame:
             "run":       d["meta"]["run"],
             "condition": d["meta"]["condition"],
             "scenario":  d["meta"].get("scenario", "default"),
+            "protocol_mode": d["meta"].get("protocol_mode", "cdp"),
+            "browser_metrics_available": d["meta"].get("browser_metrics_available", True),
         }
 
         # Energy
@@ -47,15 +49,16 @@ def load_data(raw_dir: Path) -> pd.DataFrame:
 
         # Browser metrics (aggregated from pages)
         pages = d.get("pages", [])
-        if pages:
-            p0 = pages[0]["metrics"]   # cold load page
+        metric_pages = [p.get("metrics") for p in pages if p.get("metrics")]
+        if metric_pages:
+            p0 = metric_pages[0]   # cold load page
             row["lcp_cold_ms"]   = p0.get("lcp")
             row["fcp_cold_ms"]   = p0.get("firstContentfulPaint")
             row["ttfb_cold_ms"]  = p0.get("ttfb")
-            row["tbt_total_ms"]  = sum(p["metrics"].get("tbt", 0) for p in pages)
+            row["tbt_total_ms"]  = sum(m.get("tbt", 0) for m in metric_pages)
             row["cls_cold"]      = p0.get("cls")
             row["transfer_kb"]   = sum(
-                (p["metrics"].get("transferSize") or 0) for p in pages
+                (m.get("transferSize") or 0) for m in metric_pages
             ) / 1024
             if p0.get("jsHeap"):
                 row["js_heap_mb"] = p0["jsHeap"].get("used_mb")
@@ -125,6 +128,18 @@ def main():
 
     scenarios = sorted(df["scenario"].dropna().unique())
     print(f"[analyze_runs] Loaded {len(df)} runs across scenarios: {', '.join(scenarios)}")
+    protocol_counts = (
+        df.groupby(["protocol_mode", "browser_metrics_available"])
+          .size()
+          .reset_index(name="count")
+    )
+    for _, record in protocol_counts.iterrows():
+        print(
+            "[analyze_runs] "
+            f"protocol={record['protocol_mode']} "
+            f"browser_metrics_available={record['browser_metrics_available']} "
+            f"count={record['count']}"
+        )
 
     metrics = [
         ("energy_total_mj",  "Total energy",              "mJ"),
@@ -220,6 +235,7 @@ def main():
         "- Device idle ≥45s between runs; runs discarded if start temp >37°C.",
         "- Energy computed as ∫ |I(t)| × V(t) dt over trace window (trapezoidal rule).",
         "- SM-A536B does not expose hardware power rail counters; battery polling used.",
+        "- Runs without a working CDP connection remain usable for system-level trace and energy analysis, but browser-level metrics are excluded when unavailable.",
         "",
     ]
     (rd / "report.md").write_text("\n".join(lines))

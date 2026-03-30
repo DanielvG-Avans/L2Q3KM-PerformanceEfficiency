@@ -19,6 +19,8 @@ set -euo pipefail
 # =============================================================================
 
 # ── Config ───────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 RUNS=30
 SSR_URL=""
 CSR_URL=""
@@ -29,12 +31,16 @@ MAX_TEMP_C=37
 COOL_WAIT_S=45
 BATTERY_POLL_S=1
 RUN_ID="$(date +%Y%m%d_%H%M%S)"
-RUN_ROOT_DIR="../data/runs/${RUN_ID}"
+RUN_ROOT_DIR="${REPO_ROOT}/data/runs/${RUN_ID}"
 RAW_DIR="${RUN_ROOT_DIR}/raw"
 PROCESSED_DIR="${RUN_ROOT_DIR}/processed"
 ANALYSIS_DIR="${RUN_ROOT_DIR}/analysis"
 DEVICE_ID="${DEVICE_ID:-}"
 BATTERY_POLL_PID=""
+PERFETTO_CONFIG="${SCRIPT_DIR}/perfetto_config.pbtxt"
+PUPPETEER_SCENARIO="${SCRIPT_DIR}/scripts/puppeteer-scenario.js"
+EXTRACT_ENERGY_SCRIPT="${REPO_ROOT}/analysis/extract_energy.py"
+ANALYZE_RUNS_SCRIPT="${REPO_ROOT}/analysis/analyze_runs.py"
 
 echo "=== SSR vs CSR Energy Benchmark ==="
 
@@ -58,13 +64,18 @@ done
 }
 
 # ── Preflight checks ─────────────────────────────────────────────
-[[ ! -f perfetto_config.pbtxt ]] && {
-  echo "ERROR: perfetto_config.pbtxt not found in $(pwd)"
+[[ ! -f "$PERFETTO_CONFIG" ]] && {
+  echo "ERROR: perfetto_config.pbtxt not found at $PERFETTO_CONFIG"
   exit 1
 }
 
-[[ ! -f scripts/puppeteer-scenario.js ]] && {
-  echo "ERROR: scripts/puppeteer-scenario.js not found"
+[[ ! -f "$PUPPETEER_SCENARIO" ]] && {
+  echo "ERROR: scripts/puppeteer-scenario.js not found at $PUPPETEER_SCENARIO"
+  exit 1
+}
+
+[[ ! -f "$EXTRACT_ENERGY_SCRIPT" || ! -f "$ANALYZE_RUNS_SCRIPT" ]] && {
+  echo "ERROR: analysis scripts not found under $REPO_ROOT/analysis"
   exit 1
 }
 
@@ -140,14 +151,41 @@ stop_battery_poller() {
 
 trap stop_battery_poller EXIT
 
+write_chrome_command_line() {
+  adb -s "$DEVICE_ID" shell "printf '%s\n' '_ --remote-debugging-port=9222' > /data/local/tmp/chrome-command-line"
+}
+
+start_perfetto_trace() {
+  local trace_remote="$1"
+  local perfetto_output
+  local perfetto_pid
+
+  perfetto_output="$(
+    adb -s "$DEVICE_ID" shell perfetto \
+      --txt \
+      --background \
+      -c /data/misc/perfetto-configs/perfetto_config.pbtxt \
+      -o "$trace_remote" 2>&1 || true
+  )"
+
+  perfetto_pid="$(printf '%s\n' "$perfetto_output" | sed -n 's/.*background pid: \([0-9][0-9]*\).*/\1/p' | head -n 1)"
+
+  if [[ -z "$perfetto_pid" ]]; then
+    perfetto_pid="$(adb -s "$DEVICE_ID" shell pidof perfetto 2>/dev/null | tr -d '\r' | awk '{print $1}' || true)"
+  fi
+
+  printf '%s\n' "$perfetto_output"
+  return 0
+}
+
 # ── Chrome warmup (removes first-run bias) ───────────────────────
 echo "→ Chrome warmup..."
 adb -s "$DEVICE_ID" shell am force-stop com.android.chrome
 sleep 1
 
-# Write Chrome command-line flags (requires chrome://flags/#enable-command-line-on-non-rooted-devices)
-# Note: file must NOT contain "chrome" as first token — flags only
-adb -s "$DEVICE_ID" shell "echo '--remote-debugging-port=9222' > /data/local/tmp/chrome-command-line"
+# Write Chrome command-line flags (requires chrome://flags/#enable-command-line-on-non-rooted-devices).
+# On non-rooted Android the first token should be "_" so Chrome treats the rest as flags.
+write_chrome_command_line
 
 adb -s "$DEVICE_ID" shell am start -a android.intent.action.VIEW -d "https://example.com" >/dev/null
 sleep 10
@@ -158,7 +196,7 @@ adb -s "$DEVICE_ID" shell dumpsys battery reset >/dev/null 2>&1 || true
 
 # ── Push Perfetto config ─────────────────────────────────────────
 adb -s "$DEVICE_ID" shell mkdir -p /data/misc/perfetto-configs/
-adb -s "$DEVICE_ID" push perfetto_config.pbtxt /data/misc/perfetto-configs/ >/dev/null
+adb -s "$DEVICE_ID" push "$PERFETTO_CONFIG" /data/misc/perfetto-configs/ >/dev/null
 
 # ── CDP forward (also re-set per run inside loop) ────────────────
 adb -s "$DEVICE_ID" forward tcp:9222 localabstract:chrome_devtools_remote
@@ -206,11 +244,17 @@ while IFS=, read -r CONDITION SCENARIO <&3; do
   echo "Run $RUN_NUM / $TOTAL_RUNS  ($CONDITION / $SCENARIO)"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  # ── 1. Cooldown ────────────────────────────────────────────────
+  # ── 1. Reset to neutral state before cooldown ──────────────────
+  adb -s "$DEVICE_ID" shell am force-stop com.android.chrome
+  sleep 1
+  adb -s "$DEVICE_ID" shell input keyevent KEYCODE_HOME
+  sleep 1
+
+  # ── 2. Cooldown ────────────────────────────────────────────────
   echo "→ Cooling down ${COOL_WAIT_S}s..."
   sleep "$COOL_WAIT_S"
 
-  # ── 2. Temperature check ───────────────────────────────────────
+  # ── 3. Temperature check ───────────────────────────────────────
   TEMP_RAW=$(adb -s "$DEVICE_ID" shell dumpsys battery | grep -m1 "temperature:" | awk '{print $2}' | tr -d '\r')
   [[ -z "$TEMP_RAW" ]] && TEMP_RAW=300
   TEMP_C=$(python3 -c "print(round($TEMP_RAW/10,1))")
@@ -223,7 +267,7 @@ while IFS=, read -r CONDITION SCENARIO <&3; do
     continue
   fi
 
-  # ── 3. Reset state ─────────────────────────────────────────────
+  # ── 4. Re-assert consistent launch state ───────────────────────
   adb -s "$DEVICE_ID" shell am force-stop com.android.chrome
   sleep 1
   adb -s "$DEVICE_ID" shell input keyevent KEYCODE_HOME
@@ -233,35 +277,37 @@ while IFS=, read -r CONDITION SCENARIO <&3; do
   adb -s "$DEVICE_ID" shell settings put system screen_brightness 120
 
   # Re-write Chrome command-line flags each run (survives force-stop)
-  adb -s "$DEVICE_ID" shell "echo '--remote-debugging-port=9222' > /data/local/tmp/chrome-command-line"
+  write_chrome_command_line
 
   # Re-establish ADB tunnels each run (prevents silent drops mid-experiment)
   adb -s "$DEVICE_ID" reverse tcp:3000 tcp:3000 2>/dev/null || true
   adb -s "$DEVICE_ID" forward tcp:9222 localabstract:chrome_devtools_remote 2>/dev/null || true
 
-  # ── 4. Start Perfetto ──────────────────────────────────────────
-  PERFETTO_PID=$(
-    adb -s "$DEVICE_ID" shell perfetto \
-      --txt \
-      --background \
-      -c /data/misc/perfetto-configs/perfetto_config.pbtxt \
-      -o "$TRACE_REMOTE" 2>&1 \
-    | grep -oP '(?<=background pid: )\d+' || true
-  )
+  # ── 5. Start Perfetto ──────────────────────────────────────────
+  PERFETTO_OUTPUT="$(start_perfetto_trace "$TRACE_REMOTE")"
+  PERFETTO_PID="$(printf '%s\n' "$PERFETTO_OUTPUT" | sed -n 's/.*background pid: \([0-9][0-9]*\).*/\1/p' | head -n 1)"
+
+  if [[ -z "$PERFETTO_PID" ]]; then
+    PERFETTO_PID="$(adb -s "$DEVICE_ID" shell pidof perfetto 2>/dev/null | tr -d '\r' | awk '{print $1}' || true)"
+  fi
 
   if [[ -z "$PERFETTO_PID" ]]; then
     echo "⚠ Could not get Perfetto PID — trace may be missing for this run"
+    if [[ -n "$PERFETTO_OUTPUT" ]]; then
+      echo "  perfetto start output:"
+      printf '%s\n' "$PERFETTO_OUTPUT" | sed 's/^/    /'
+    fi
   else
     echo "→ Perfetto started (pid: $PERFETTO_PID)"
   fi
 
   sleep 2
 
-  # ── 5. Start battery poller ────────────────────────────────────
+  # ── 6. Start battery poller ────────────────────────────────────
   start_battery_poller "$BATTERY_CSV"
 
-  # ── 6. Run Puppeteer scenario ──────────────────────────────────
-  node scripts/puppeteer-scenario.js \
+  # ── 7. Run Puppeteer scenario ──────────────────────────────────
+  node "$PUPPETEER_SCENARIO" \
     --url "$URL" \
     --condition "$CONDITION" \
     --scenario "$SCENARIO" \
@@ -273,7 +319,7 @@ while IFS=, read -r CONDITION SCENARIO <&3; do
 
   stop_battery_poller
 
-  # ── 7. Stop Perfetto ───────────────────────────────────────────
+  # ── 8. Stop Perfetto ───────────────────────────────────────────
   if [[ -n "$PERFETTO_PID" ]]; then
     adb -s "$DEVICE_ID" shell kill -SIGINT "$PERFETTO_PID" 2>/dev/null || true
   else
@@ -283,7 +329,7 @@ while IFS=, read -r CONDITION SCENARIO <&3; do
 
   sleep 3
 
-  # ── 8. Pull trace ──────────────────────────────────────────────
+  # ── 9. Pull trace ──────────────────────────────────────────────
   if adb -s "$DEVICE_ID" pull "$TRACE_REMOTE" "$TRACE_LOCAL"; then
     adb -s "$DEVICE_ID" shell rm -f "$TRACE_REMOTE" 2>/dev/null || true
   else
@@ -296,7 +342,7 @@ while IFS=, read -r CONDITION SCENARIO <&3; do
     fi
   fi
 
-  # ── 9. Sanity output ───────────────────────────────────────────
+  # ── 10. Sanity output ──────────────────────────────────────────
   if [[ -f "$METRICS_FILE" ]]; then
     LCP=$(python3 -c "
 import json, sys
@@ -327,8 +373,8 @@ adb -s "$DEVICE_ID" shell dumpsys battery reset >/dev/null 2>&1 || true
 echo ""
 echo "→ Running analysis..."
 
-python3 ../analysis/extract_energy.py --raw-dir "$RAW_DIR"
-python3 ../analysis/analyze_runs.py   --raw-dir "$RAW_DIR"
+python3 "$EXTRACT_ENERGY_SCRIPT" --raw-dir "$RAW_DIR"
+python3 "$ANALYZE_RUNS_SCRIPT"   --raw-dir "$RAW_DIR"
 
 # ── Move outputs ─────────────────────────────────────────────────
 [[ -f "$RAW_DIR/energy_metrics.csv" ]] && mv -f "$RAW_DIR/energy_metrics.csv" "$PROCESSED_DIR/energy_metrics.csv"

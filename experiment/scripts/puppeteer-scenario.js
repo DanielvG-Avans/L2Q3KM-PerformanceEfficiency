@@ -62,6 +62,29 @@ const LOAD_TIMEOUT_MS = 30000;
 const SETTLE_MS_CSR = 800; // Extra settle for React hydration on CSR
 const CDP_READY_TIMEOUT_MS = 15000;
 const CDP_POLL_MS = 500;
+const FALLBACK_PAGE_OBSERVE_MS = 5000;
+const CHROME_BOOT_URL = "about:blank";
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function runCommand(command, options = {}) {
+  try {
+    const stdout = execSync(command, {
+      stdio: "pipe",
+      encoding: "utf8",
+      ...options,
+    });
+    return { ok: true, stdout: stdout.trim() };
+  } catch (error) {
+    return {
+      ok: false,
+      stdout: error.stdout?.toString().trim() || "",
+      stderr: error.stderr?.toString().trim() || error.message,
+    };
+  }
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 async function getMetrics(page) {
@@ -118,7 +141,7 @@ async function getMetrics(page) {
   return data;
 }
 
-async function waitForCdpReady(timeoutMs) {
+async function waitForCdpReady(timeoutMs, diagnostics) {
   const start = Date.now();
   const endpoint = "http://localhost:9222/json/version";
 
@@ -126,15 +149,71 @@ async function waitForCdpReady(timeoutMs) {
     try {
       const res = await fetch(endpoint);
       if (res.ok) {
+        diagnostics.versionProbe = {
+          ok: true,
+          status: res.status,
+          body: await res.text(),
+        };
         return true;
       }
+      diagnostics.versionProbe = {
+        ok: false,
+        status: res.status,
+        body: await res.text(),
+      };
     } catch (_) {
-      // Keep polling until timeout.
+      diagnostics.versionProbe = {
+        ok: false,
+        error: _.message,
+      };
     }
-    await new Promise((r) => setTimeout(r, CDP_POLL_MS));
+    await sleep(CDP_POLL_MS);
   }
 
   return false;
+}
+
+async function runFallbackScenario(result) {
+  process.stdout.write(
+    "  [puppeteer] Falling back to deterministic am-start protocol\n",
+  );
+
+  result.meta.protocol_mode = "fallback_am_start";
+  result.meta.browser_metrics_available = false;
+  result.meta.fallback = {
+    page_observe_ms: FALLBACK_PAGE_OBSERVE_MS,
+    dwell_ms: DWELL_MS,
+  };
+
+  for (let i = 0; i < PAGES.length; i += 1) {
+    const pageUrl = `${url.replace(/\/$/, "")}${PAGES[i]}`;
+    const launch = runCommand(
+      `${ADB_PREFIX} shell am start -W -a android.intent.action.VIEW -d "${pageUrl}"`,
+      {
+        timeout: 15000,
+      },
+    );
+
+    result.pages.push({
+      page_index: i,
+      path: PAGES[i],
+      nav_ms: null,
+      metrics: null,
+      fallback_launch: launch.ok ? "ok" : "error",
+      fallback_stdout: launch.stdout || null,
+      fallback_stderr: launch.stderr || null,
+    });
+
+    if (!launch.ok) {
+      result.errors.push({
+        message: `am start fallback failed for ${pageUrl}: ${launch.stderr || "unknown error"}`,
+      });
+      continue;
+    }
+
+    await sleep(FALLBACK_PAGE_OBSERVE_MS);
+    await sleep(DWELL_MS);
+  }
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -147,25 +226,47 @@ async function waitForCdpReady(timeoutMs) {
       url,
       timestamp: new Date().toISOString(),
       pages_tested: PAGES,
+      protocol_mode: "cdp",
+      browser_metrics_available: true,
     },
     pages: [],
     errors: [],
+    diagnostics: {
+      adbForwardList: null,
+      chromeSocket: null,
+      chromeLaunch: null,
+      versionProbe: null,
+      puppeteerConnect: null,
+    },
   };
 
   let browser = null;
 
   try {
     // Ensure Chrome is launched before connecting to CDP.
+    // Launch a neutral page first so the measured route is the first experimental navigation.
     // On Android, the devtools socket may not exist until Chrome is running.
-    execSync(
-      `${ADB_PREFIX} shell am start -a android.intent.action.VIEW -d "${url}"`,
+    result.diagnostics.adbForwardList = runCommand(`${ADB_PREFIX} forward --list`);
+    result.diagnostics.chromeSocket = runCommand(
+      `${ADB_PREFIX} shell cat /proc/net/unix | grep chrome_devtools_remote`,
+    );
+
+    result.diagnostics.chromeLaunch = runCommand(
+      `${ADB_PREFIX} shell am start -a android.intent.action.VIEW -d "${CHROME_BOOT_URL}"`,
       {
-        stdio: "pipe",
         timeout: 5000,
       },
     );
+    if (!result.diagnostics.chromeLaunch.ok) {
+      throw new Error(
+        `Chrome launch failed: ${result.diagnostics.chromeLaunch.stderr || "unknown error"}`,
+      );
+    }
 
-    const cdpReady = await waitForCdpReady(CDP_READY_TIMEOUT_MS);
+    const cdpReady = await waitForCdpReady(
+      CDP_READY_TIMEOUT_MS,
+      result.diagnostics,
+    );
     if (!cdpReady) {
       throw new Error(
         "DevTools endpoint not ready at http://localhost:9222/json/version",
@@ -177,6 +278,7 @@ async function waitForCdpReady(timeoutMs) {
       browserURL: "http://localhost:9222",
       defaultViewport: { width: 390, height: 844 }, // Mobile viewport
     });
+    result.diagnostics.puppeteerConnect = { ok: true };
 
     // Close pre-existing tabs so each run starts from one controlled page.
     const existingPages = await browser.pages();
@@ -222,7 +324,7 @@ async function waitForCdpReady(timeoutMs) {
 
       // CSR apps need extra time for React hydration after networkidle2
       if (condition === "csr") {
-        await new Promise((r) => setTimeout(r, SETTLE_MS_CSR));
+        await sleep(SETTLE_MS_CSR);
       }
 
       const metrics = await getMetrics(page);
@@ -249,36 +351,22 @@ async function waitForCdpReady(timeoutMs) {
       );
 
       // Dwell time (simulate user reading)
-      await new Promise((r) => setTimeout(r, DWELL_MS));
+      await sleep(DWELL_MS);
     }
 
     await page.close();
   } catch (err) {
     process.stderr.write(`  [puppeteer] ERROR: ${err.message}\n`);
     result.errors.push({ message: err.message });
+    if (!result.diagnostics.puppeteerConnect) {
+      result.diagnostics.puppeteerConnect = {
+        ok: false,
+        error: err.message,
+      };
+    }
 
-    // Fallback: if CDP fails, use am start and record no DevTools metrics
-    // This ensures the Perfetto trace still captures energy data even if
-    // the DevTools connection fails.
     if (url) {
-      process.stdout.write(
-        "  [puppeteer] Falling back to am start (Perfetto trace still valid)\n",
-      );
-      try {
-        execSync(
-          `${ADB_PREFIX} shell am start -a android.intent.action.VIEW -d "${url}"`,
-          {
-            stdio: "pipe",
-            timeout: 5000,
-          },
-        );
-        await new Promise((r) => setTimeout(r, 20000)); // 20s wait for load
-        result.meta.fallback = "am_start_no_devtools_metrics";
-      } catch (e2) {
-        result.errors.push({
-          message: "am start fallback also failed: " + e2.message,
-        });
-      }
+      await runFallbackScenario(result);
     }
   } finally {
     if (browser) {
