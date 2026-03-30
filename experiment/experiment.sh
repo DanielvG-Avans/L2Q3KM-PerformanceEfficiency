@@ -110,7 +110,7 @@ start_battery_poller() {
   (
     while true; do
       local ts_s
-      ts_s=$(python3 -c 'import time; print(f"{time.time():.3f}")')
+      ts_s=$(python3 -c 'import time; print(f"{time.time():.3f}")' 2>/dev/null || date +%s)
 
       local dump
       dump=$(adb -s "$DEVICE_ID" shell dumpsys battery | tr -d '\r')
