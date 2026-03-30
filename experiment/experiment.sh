@@ -214,7 +214,7 @@ sleep 1
 # On non-rooted Android the first token should be "_" so Chrome treats the rest as flags.
 write_chrome_command_line
 
-adb -s "$DEVICE_ID" shell am start -a android.intent.action.VIEW -d "https://example.com" >/dev/null
+adb -s "$DEVICE_ID" shell am start -a android.intent.action.VIEW -d "about:blank" >/dev/null
 sleep 10
 adb -s "$DEVICE_ID" shell am force-stop com.android.chrome
 
