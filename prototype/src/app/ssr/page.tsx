@@ -1,34 +1,52 @@
-import { getInventory } from "@/data/mockData";
+import {
+  buildStoreFrontView,
+  getInventory,
+  normalizeQuery,
+} from "@/data/mockData";
 import { StoreFront } from "@/components/StoreFront";
+
+const PAGE_SIZE = 40;
+export const dynamic = "force-dynamic";
+
+const toSingleValue = (value?: string | string[]) => {
+  if (Array.isArray(value)) {
+    return value[0] || "";
+  }
+
+  return value || "";
+};
 
 export default async function SSRPage({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: {
+    scenario?: string | string[];
+    q?: string | string[];
+    category?: string | string[];
+    sort?: string | string[];
+    page?: string | string[];
+  };
 }) {
-  const query = searchParams.q || "";
-  const allProducts = getInventory();
-
-  const filtered = allProducts.filter((p) =>
-    p.name.toLowerCase().includes(query.toLowerCase()),
-  );
+  const query = normalizeQuery({
+    scenario: toSingleValue(searchParams.scenario),
+    q: toSingleValue(searchParams.q),
+    category: toSingleValue(searchParams.category),
+    sort: toSingleValue(searchParams.sort),
+    page: toSingleValue(searchParams.page),
+  });
+  const inventory = getInventory(query.scenario);
+  const view = buildStoreFrontView(inventory, query, PAGE_SIZE);
 
   return (
-    <>
-      {/* Client-side form voor de search om de URL te updaten */}
-      <StoreFront products={filtered} isClient={false} />
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-        document.querySelector('input').oninput = (e) => {
-          const url = new URL(window.location);
-          url.searchParams.set('q', e.target.value);
-          window.history.replaceState({}, '', url);
-          window.location.reload(); // Simuleer pure SSR roundtrip
-        }
-      `,
-        }}
-      />
-    </>
+    <StoreFront
+      products={view.items}
+      query={query}
+      totalItems={view.totalItems}
+      page={view.page}
+      totalPages={view.totalPages}
+      summary={view.summary}
+      basePath="/ssr"
+      isClient={false}
+    />
   );
 }

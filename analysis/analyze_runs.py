@@ -34,27 +34,36 @@ def load_data(raw_dir: Path) -> pd.DataFrame:
         row = {
             "run":       d["meta"]["run"],
             "condition": d["meta"]["condition"],
+            "scenario":  d["meta"].get("scenario", "default"),
+            "protocol_mode": d["meta"].get("protocol_mode", "cdp"),
+            "browser_metrics_available": d["meta"].get("browser_metrics_available", True),
         }
 
         # Energy
         e = d.get("energy", {})
         row["energy_total_mj"]  = e.get("energy_total_mj")
+        row["battery_energy_valid"] = e.get("battery_energy_valid")
+        row["battery_current_nonzero_ratio"] = e.get("battery_current_nonzero_ratio")
         row["avg_power_mw"]     = e.get("avg_power_mw")
         row["avg_cpu_freq_mhz"] = e.get("avg_cpu_freq_mhz")
+        row["cpu_freq_residency_ghz_s"] = e.get("cpu_freq_residency_ghz_s")
+        row["cpu_energy_proxy_score"] = e.get("cpu_energy_proxy_score")
+        row["cpu_energy_proxy_per_s"] = e.get("cpu_energy_proxy_per_s")
         row["peak_memory_kb"]   = e.get("peak_memory_rss_kb")
         row["frame_janks"]      = e.get("frame_janks")
 
         # Browser metrics (aggregated from pages)
         pages = d.get("pages", [])
-        if pages:
-            p0 = pages[0]["metrics"]   # cold load page
+        metric_pages = [p.get("metrics") for p in pages if p.get("metrics")]
+        if metric_pages:
+            p0 = metric_pages[0]   # cold load page
             row["lcp_cold_ms"]   = p0.get("lcp")
             row["fcp_cold_ms"]   = p0.get("firstContentfulPaint")
             row["ttfb_cold_ms"]  = p0.get("ttfb")
-            row["tbt_total_ms"]  = sum(p["metrics"].get("tbt", 0) for p in pages)
+            row["tbt_total_ms"]  = sum(m.get("tbt", 0) for m in metric_pages)
             row["cls_cold"]      = p0.get("cls")
             row["transfer_kb"]   = sum(
-                (p["metrics"].get("transferSize") or 0) for p in pages
+                (m.get("transferSize") or 0) for m in metric_pages
             ) / 1024
             if p0.get("jsHeap"):
                 row["js_heap_mb"] = p0["jsHeap"].get("used_mb")
@@ -122,13 +131,29 @@ def main():
     if df.empty:
         print("[analyze_runs] No data."); sys.exit(1)
 
-    ssr = df[df["condition"] == "ssr"]
-    csr = df[df["condition"] == "csr"]
-    print(f"[analyze_runs] {len(ssr)} SSR runs, {len(csr)} CSR runs loaded")
+    scenarios = sorted(df["scenario"].dropna().unique())
+    print(f"[analyze_runs] Loaded {len(df)} runs across scenarios: {', '.join(scenarios)}")
+    battery_valid_runs = int(df["battery_energy_valid"].fillna(False).sum()) if "battery_energy_valid" in df.columns else 0
+    print(f"[analyze_runs] battery-valid runs: {battery_valid_runs}/{len(df)}")
+    protocol_counts = (
+        df.groupby(["protocol_mode", "browser_metrics_available"])
+          .size()
+          .reset_index(name="count")
+    )
+    for _, record in protocol_counts.iterrows():
+        print(
+            "[analyze_runs] "
+            f"protocol={record['protocol_mode']} "
+            f"browser_metrics_available={record['browser_metrics_available']} "
+            f"count={record['count']}"
+        )
 
     metrics = [
         ("energy_total_mj",  "Total energy",              "mJ"),
         ("avg_power_mw",     "Average power",             "mW"),
+        ("cpu_energy_proxy_score", "CPU energy proxy score", "score"),
+        ("cpu_energy_proxy_per_s", "CPU energy proxy rate", "score/s"),
+        ("cpu_freq_residency_ghz_s", "CPU frequency residency", "GHz*s"),
         ("lcp_cold_ms",      "LCP — cold load",           "ms"),
         ("fcp_cold_ms",      "FCP — cold load",           "ms"),
         ("ttfb_cold_ms",     "TTFB — cold load",          "ms"),
@@ -144,17 +169,37 @@ def main():
     plots_dir = rd / "plots"; plots_dir.mkdir(exist_ok=True)
     results = []
 
-    for col, label, unit in metrics:
-        if col not in df.columns or df[col].dropna().empty:
-            continue
-        r = mann_whitney(ssr[col], csr[col], label)
-        results.append(r)
-        if "p_value" in r:
-            print(f"  {label:35s} SSR={r['median_ssr']:8.1f}  CSR={r['median_csr']:8.1f}  "
-                  f"p={r['p_value']:.4f}  r={r['effect_r']:.3f} ({r['effect_magnitude']})")
-        try:
-            boxplot(ssr[col], csr[col], label, unit, str(plots_dir / f"{col}.png"))
-        except Exception: pass
+    for scenario in scenarios:
+        ssr = df[(df["condition"] == "ssr") & (df["scenario"] == scenario)]
+        csr = df[(df["condition"] == "csr") & (df["scenario"] == scenario)]
+
+        print(f"[analyze_runs] Scenario '{scenario}': {len(ssr)} SSR runs, {len(csr)} CSR runs")
+
+        for col, label, unit in metrics:
+            if col not in df.columns or df[col].dropna().empty:
+                continue
+
+            r = mann_whitney(ssr[col], csr[col], label)
+            r["scenario"] = scenario
+            results.append(r)
+
+            if "p_value" in r:
+                print(
+                    f"  [{scenario}] {label:27s} SSR={r['median_ssr']:8.1f}  "
+                    f"CSR={r['median_csr']:8.1f}  p={r['p_value']:.4f}  "
+                    f"r={r['effect_r']:.3f} ({r['effect_magnitude']})"
+                )
+
+            try:
+                boxplot(
+                    ssr[col],
+                    csr[col],
+                    f"{label} ({scenario})",
+                    unit,
+                    str(plots_dir / f"{scenario}_{col}.png"),
+                )
+            except Exception:
+                pass
 
     # ── Save stats ─────────────────────────────────────────────────────────────
     stats_df = pd.DataFrame(results)
@@ -169,20 +214,22 @@ def main():
         "# SSR vs CSR Benchmark — Results",
         "",
         f"**Device:** Samsung SM-A536B (Galaxy A53), Android 16, SDK 36  ",
-        f"**Energy method:** Battery current × voltage integration (250ms polling, Perfetto)  ",
+        f"**Direct energy method:** Battery current × voltage integration (250ms polling)  ",
+        f"**Proxy energy method:** Perfetto CPU frequency residency weighted by core class  ",
         f"**Statistical test:** Mann-Whitney U, two-sided, α = 0.05  ",
         f"**Bonferroni-corrected threshold:** α = {alpha_b:.4f} ({n_tests} tests)  ",
         "",
         "## Results table",
         "",
-        "| Metric | SSR median (IQR) | CSR median (IQR) | *p* | Effect *r* | Sig |",
-        "|--------|-----------------|-----------------|-----|-----------|-----|",
+        "| Scenario | Metric | SSR median (IQR) | CSR median (IQR) | *p* | Effect *r* | Sig |",
+        "|----------|--------|------------------|------------------|-----|-----------|-----|",
     ]
     for r in results:
         if "p_value" not in r: continue
         sig = "✓" if r["p_value"] < alpha_b else "–"
         pstr = f"{r['p_value']:.4f}" if r["p_value"] >= 0.0001 else "<0.0001"
         lines.append(
+            f"| {r.get('scenario', 'default')} "
             f"| {r['metric']} "
             f"| {r['median_ssr']:.1f} (±{r['iqr_ssr']:.1f}) "
             f"| {r['median_csr']:.1f} (±{r['iqr_csr']:.1f}) "
@@ -198,7 +245,10 @@ def main():
         "- Device radios: WiFi only (mobile data, Bluetooth, NFC disabled).",
         "- Device idle ≥45s between runs; runs discarded if start temp >37°C.",
         "- Energy computed as ∫ |I(t)| × V(t) dt over trace window (trapezoidal rule).",
+        "- Battery-current energy under USB-connected runs may be contaminated by external power and should be treated cautiously when many samples are zero-current.",
+        "- CPU energy proxy is an inference from Perfetto CPU frequency residency, weighted more heavily for big cores; it supports relative SSR/CSR comparison, not absolute joule claims.",
         "- SM-A536B does not expose hardware power rail counters; battery polling used.",
+        "- Runs without a working CDP connection remain usable for system-level trace and energy analysis, but browser-level metrics are excluded when unavailable.",
         "",
     ]
     (rd / "report.md").write_text("\n".join(lines))

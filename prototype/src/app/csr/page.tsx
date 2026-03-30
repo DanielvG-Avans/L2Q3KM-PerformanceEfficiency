@@ -1,21 +1,34 @@
-"use client";
+import { normalizeQuery } from "@/data/mockData";
+import { CSRClientPage } from "@/components/CSRClientPage";
 
-import { useState, useMemo } from "react";
-import { getInventory } from "@/data/mockData";
-import { StoreFront } from "@/components/StoreFront";
+export const dynamic = "force-dynamic";
 
-const allProducts = getInventory(); // In-memory constant
+const toSingleValue = (value?: string | string[]) => {
+  if (Array.isArray(value)) {
+    return value[0] || "";
+  }
 
-export default function CSRPage() {
-  const [search, setSearch] = useState("");
+  return value || "";
+};
 
-  const filtered = useMemo(() => {
-    return allProducts.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()),
-    );
-  }, [search]);
+export default function CSRPage({
+  searchParams,
+}: {
+  searchParams: {
+    scenario?: string | string[];
+    q?: string | string[];
+    category?: string | string[];
+    sort?: string | string[];
+    page?: string | string[];
+  };
+}) {
+  const initialQuery = normalizeQuery({
+    scenario: toSingleValue(searchParams.scenario),
+    q: toSingleValue(searchParams.q),
+    category: toSingleValue(searchParams.category),
+    sort: toSingleValue(searchParams.sort),
+    page: toSingleValue(searchParams.page),
+  });
 
-  return (
-    <StoreFront products={filtered} onSearch={setSearch} isClient={true} />
-  );
+  return <CSRClientPage initialQuery={initialQuery} />;
 }
