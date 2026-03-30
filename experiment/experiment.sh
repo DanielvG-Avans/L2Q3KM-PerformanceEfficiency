@@ -5,19 +5,17 @@ set -euo pipefail
 # SSR vs CSR energy benchmark for Samsung SM-A536B (Galaxy A53)
 #
 # Usage:
-#   bash run.sh --ssr-url http://192.168.x.x:3000 \
-#               --csr-url http://192.168.x.x:3001 \
-#               --runs 30 \
-#               --scenarios static,dynamic,massive \
-#               --ssr-pages '/ssr?scenario={scenario}' \
-#               --csr-pages '/csr?scenario={scenario}'
+#   bash experiment.sh --ssr-url http://localhost:3000 \
+#                      --csr-url http://localhost:3000 \
+#                      --runs 30 \
+#                      --scenarios static,dynamic,massive \
+#                      --ssr-pages '/ssr?scenario={scenario}' \
+#                      --csr-pages '/csr?scenario={scenario}'
 #
-# What this does:
-#   1. Generates a randomised interleaved run order (prevents thermal bias)
-#   2. For each run: cools down, clears state, starts Perfetto, opens URL,
-#      waits for load, pulls trace, saves DevTools metrics via CDP
-#   3. After all runs: parses traces + produces statistical analysis
-#
+# Prerequisites (one-time, on the phone):
+#   1. chrome://flags/#enable-command-line-on-non-rooted-devices → Enabled
+#   2. USB debugging enabled, device authorised
+#   3. adb reverse already handled — this script sets it each run
 # =============================================================================
 
 # ── Config ───────────────────────────────────────────────────────
@@ -43,13 +41,13 @@ echo "=== SSR vs CSR Energy Benchmark ==="
 # ── Args ─────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --ssr-url) SSR_URL="$2"; shift 2 ;;
-    --csr-url) CSR_URL="$2"; shift 2 ;;
-    --runs)    RUNS="$2";    shift 2 ;;
-    --scenarios) SCENARIOS="$2"; shift 2 ;;
-    --ssr-pages) SSR_PAGES="$2"; shift 2 ;;
-    --csr-pages) CSR_PAGES="$2"; shift 2 ;;
-    --device-id) DEVICE_ID="$2"; shift 2 ;;
+    --ssr-url)    SSR_URL="$2";    shift 2 ;;
+    --csr-url)    CSR_URL="$2";    shift 2 ;;
+    --runs)       RUNS="$2";       shift 2 ;;
+    --scenarios)  SCENARIOS="$2";  shift 2 ;;
+    --ssr-pages)  SSR_PAGES="$2";  shift 2 ;;
+    --csr-pages)  CSR_PAGES="$2";  shift 2 ;;
+    --device-id)  DEVICE_ID="$2";  shift 2 ;;
     *) echo "Unknown argument: $1"; exit 1 ;;
   esac
 done
@@ -59,6 +57,18 @@ done
   exit 1
 }
 
+# ── Preflight checks ─────────────────────────────────────────────
+[[ ! -f perfetto_config.pbtxt ]] && {
+  echo "ERROR: perfetto_config.pbtxt not found in $(pwd)"
+  exit 1
+}
+
+[[ ! -f scripts/puppeteer-scenario.js ]] && {
+  echo "ERROR: scripts/puppeteer-scenario.js not found"
+  exit 1
+}
+
+# ── Device detection ─────────────────────────────────────────────
 if [[ -z "$DEVICE_ID" ]]; then
   DEVICE_LINES=$(adb devices | awk 'NR>1 && $2=="device" {print $1}')
   DEVICE_COUNT=$(echo "$DEVICE_LINES" | sed '/^$/d' | wc -l | tr -d ' ')
@@ -81,9 +91,9 @@ echo "Using device: $DEVICE_ID"
 
 mkdir -p "$RAW_DIR" "$PROCESSED_DIR" "$ANALYSIS_DIR"
 
+# ── Battery poller ───────────────────────────────────────────────
 start_battery_poller() {
   local out_csv="$1"
-
   echo "timestamp_s,current_ua,voltage_uv,temp_deci_c,charge_counter_uah,source" > "$out_csv"
 
   (
@@ -94,17 +104,14 @@ start_battery_poller() {
       local dump
       dump=$(adb -s "$DEVICE_ID" shell dumpsys battery | tr -d '\r')
 
-      local current_ua
-      local voltage_mv
-      local temp_deci_c
-      local charge_counter_uah
+      local current_ua voltage_mv voltage_uv temp_deci_c charge_counter_uah
 
-      current_ua=$(echo "$dump" | awk -F': *' '/^  current now:/{print $2; exit}')
-      voltage_mv=$(echo "$dump" | awk -F': *' '/^  voltage:/{print $2; exit}')
-      temp_deci_c=$(echo "$dump" | awk -F': *' '/^  temperature:/{print $2; exit}')
+      current_ua=$(echo "$dump"       | awk -F': *' '/^  current now:/{print $2; exit}')
+      voltage_mv=$(echo "$dump"       | awk -F': *' '/^  voltage:/{print $2; exit}')
+      temp_deci_c=$(echo "$dump"      | awk -F': *' '/^  temperature:/{print $2; exit}')
       charge_counter_uah=$(echo "$dump" | awk -F': *' '/^  charge counter:/{print $2; exit}')
 
-      # Samsung dumpsys current now often reports in mA; normalize to uA.
+      # Samsung dumpsys often reports current in mA — normalise to uA
       if [[ "$current_ua" =~ ^-?[0-9]+$ ]] && (( current_ua > -20000 && current_ua < 20000 )); then
         current_ua=$((current_ua * 1000))
       fi
@@ -135,45 +142,56 @@ trap stop_battery_poller EXIT
 
 # ── Chrome warmup (removes first-run bias) ───────────────────────
 echo "→ Chrome warmup..."
+adb -s "$DEVICE_ID" shell am force-stop com.android.chrome
+sleep 1
+
+# Write Chrome command-line flags (requires chrome://flags/#enable-command-line-on-non-rooted-devices)
+# Note: file must NOT contain "chrome" as first token — flags only
+adb -s "$DEVICE_ID" shell "echo '--remote-debugging-port=9222' > /data/local/tmp/chrome-command-line"
+
 adb -s "$DEVICE_ID" shell am start -a android.intent.action.VIEW -d "https://example.com" >/dev/null
 sleep 10
 adb -s "$DEVICE_ID" shell am force-stop com.android.chrome
 
-# ── Ensure real battery telemetry (avoid frozen dumpsys state) ─────
+# ── Reset battery stats ──────────────────────────────────────────
 adb -s "$DEVICE_ID" shell dumpsys battery reset >/dev/null 2>&1 || true
 
 # ── Push Perfetto config ─────────────────────────────────────────
 adb -s "$DEVICE_ID" shell mkdir -p /data/misc/perfetto-configs/
 adb -s "$DEVICE_ID" push perfetto_config.pbtxt /data/misc/perfetto-configs/ >/dev/null
 
-# ── CDP Forward ──────────────────────────────────────────────────
+# ── CDP forward (also re-set per run inside loop) ────────────────
 adb -s "$DEVICE_ID" forward tcp:9222 localabstract:chrome_devtools_remote
 
-# ── Randomized run order ─────────────────────────────────────────
+# ── Randomised run order ─────────────────────────────────────────
 python3 - <<EOF > "$RAW_DIR/run_order.txt"
 import random
 
 runs = $RUNS
 scenarios = [s.strip() for s in "$SCENARIOS".split(",") if s.strip()]
 if not scenarios:
-  raise SystemExit("No scenarios configured. Pass --scenarios static,dynamic,massive")
+    raise SystemExit("No scenarios configured.")
 
 cases = []
 for scenario in scenarios:
-  cases.extend([("ssr", scenario)] * runs)
-  cases.extend([("csr", scenario)] * runs)
+    cases.extend([("ssr", scenario)] * runs)
+    cases.extend([("csr", scenario)] * runs)
 
 random.shuffle(cases)
 for condition, scenario in cases:
-  print(f"{condition},{scenario}")
+    print(f"{condition},{scenario}")
 EOF
 
-echo "run,condition,temp_c,timestamp" > "$RAW_DIR/temperatures.csv"
+TOTAL_RUNS=$(wc -l < "$RAW_DIR/run_order.txt")
+echo "Total runs scheduled: $TOTAL_RUNS"
+
+echo "run,condition,scenario,temp_c,timestamp" > "$RAW_DIR/temperatures.csv"
 
 RUN_NUM=0
 
 while IFS=, read -r CONDITION SCENARIO <&3; do
   RUN_NUM=$((RUN_NUM + 1))
+
   URL=$([[ "$CONDITION" == "ssr" ]] && echo "$SSR_URL" || echo "$CSR_URL")
   PAGE_TEMPLATE=$([[ "$CONDITION" == "ssr" ]] && echo "$SSR_PAGES" || echo "$CSR_PAGES")
   PAGES="${PAGE_TEMPLATE//\{scenario\}/$SCENARIO}"
@@ -184,56 +202,65 @@ while IFS=, read -r CONDITION SCENARIO <&3; do
   BATTERY_CSV="$RAW_DIR/run_${RUN_NUM}_${CONDITION}_${SCENARIO}.battery.csv"
 
   echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "Run $RUN_NUM ($CONDITION / $SCENARIO)"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "Run $RUN_NUM / $TOTAL_RUNS  ($CONDITION / $SCENARIO)"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  # ── 1. Cooldown + temperature check ────────────────────────────
+  # ── 1. Cooldown ────────────────────────────────────────────────
+  echo "→ Cooling down ${COOL_WAIT_S}s..."
   sleep "$COOL_WAIT_S"
 
+  # ── 2. Temperature check ───────────────────────────────────────
   TEMP_RAW=$(adb -s "$DEVICE_ID" shell dumpsys battery | grep -m1 "temperature:" | awk '{print $2}' | tr -d '\r')
-
-  if [[ -z "$TEMP_RAW" ]]; then
-    TEMP_RAW=300
-  fi
-
+  [[ -z "$TEMP_RAW" ]] && TEMP_RAW=300
   TEMP_C=$(python3 -c "print(round($TEMP_RAW/10,1))")
 
-  echo "$RUN_NUM,$CONDITION,$TEMP_C,$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$RAW_DIR/temperatures.csv"
-
+  echo "$RUN_NUM,$CONDITION,$SCENARIO,$TEMP_C,$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$RAW_DIR/temperatures.csv"
   echo "Temp: ${TEMP_C}°C"
 
   if (( $(echo "$TEMP_C > $MAX_TEMP_C" | bc -l) )); then
-    echo "Too hot, skipping run..."
+    echo "⚠ Too hot (>${MAX_TEMP_C}°C), skipping run..."
     continue
   fi
 
-  # ── 2. Reset state (correct method) ────────────────────────────
+  # ── 3. Reset state ─────────────────────────────────────────────
   adb -s "$DEVICE_ID" shell am force-stop com.android.chrome
-  adb -s "$DEVICE_ID" shell pkill com.android.chrome 2>/dev/null || true
-  adb -s "$DEVICE_ID" shell am kill-all >/dev/null 2>&1 || true
+  sleep 1
   adb -s "$DEVICE_ID" shell input keyevent KEYCODE_HOME
-  sleep 2
+  sleep 1
 
-  # Ensure brightness consistency
+  # Brightness consistency
   adb -s "$DEVICE_ID" shell settings put system screen_brightness 120
 
-  # ── 3. Start Perfetto trace ────────────────────────────────────
-  adb -s "$DEVICE_ID" shell perfetto \
-    --txt \
-    --background \
-    -c /data/misc/perfetto-configs/perfetto_config.pbtxt \
-    -o "$TRACE_REMOTE"
+  # Re-write Chrome command-line flags each run (survives force-stop)
+  adb -s "$DEVICE_ID" shell "echo '--remote-debugging-port=9222' > /data/local/tmp/chrome-command-line"
+
+  # Re-establish ADB tunnels each run (prevents silent drops mid-experiment)
+  adb -s "$DEVICE_ID" reverse tcp:3000 tcp:3000 2>/dev/null || true
+  adb -s "$DEVICE_ID" forward tcp:9222 localabstract:chrome_devtools_remote 2>/dev/null || true
+
+  # ── 4. Start Perfetto ──────────────────────────────────────────
+  PERFETTO_PID=$(
+    adb -s "$DEVICE_ID" shell perfetto \
+      --txt \
+      --background \
+      -c /data/misc/perfetto-configs/perfetto_config.pbtxt \
+      -o "$TRACE_REMOTE" 2>&1 \
+    | grep -oP '(?<=background pid: )\d+' || true
+  )
+
+  if [[ -z "$PERFETTO_PID" ]]; then
+    echo "⚠ Could not get Perfetto PID — trace may be missing for this run"
+  else
+    echo "→ Perfetto started (pid: $PERFETTO_PID)"
+  fi
 
   sleep 2
 
-  # ── 3b. Start battery polling fallback capture ─────────────────
+  # ── 5. Start battery poller ────────────────────────────────────
   start_battery_poller "$BATTERY_CSV"
 
-  # ── 4. Run Puppeteer scenario ──────────────────────────────────
-  adb -s "$DEVICE_ID" shell "echo 'chrome --remote-debugging-port=9222' > /data/local/tmp/chrome-command-line"
-  adb -s "$DEVICE_ID" forward tcp:9222 localabstract:chrome_devtools_remote 2>/dev/null || true
-
+  # ── 6. Run Puppeteer scenario ──────────────────────────────────
   node scripts/puppeteer-scenario.js \
     --url "$URL" \
     --condition "$CONDITION" \
@@ -242,56 +269,78 @@ while IFS=, read -r CONDITION SCENARIO <&3; do
     --device-id "$DEVICE_ID" \
     --pages "$PAGES" \
     --out "$METRICS_FILE" \
-    2>&1 | tee "$RAW_DIR/run_${RUN_NUM}_${CONDITION}.log"
+    2>&1 | tee "$RAW_DIR/run_${RUN_NUM}_${CONDITION}_${SCENARIO}.log"
 
   stop_battery_poller
 
-  # ── 5. Stop trace ──────────────────────────────────────────────
-  adb -s "$DEVICE_ID" shell pkill -SIGINT perfetto 2>/dev/null || true
+  # ── 7. Stop Perfetto ───────────────────────────────────────────
+  if [[ -n "$PERFETTO_PID" ]]; then
+    adb -s "$DEVICE_ID" shell kill -SIGINT "$PERFETTO_PID" 2>/dev/null || true
+  else
+    # Fallback: broad pkill (less safe but better than no stop)
+    adb -s "$DEVICE_ID" shell pkill -SIGINT perfetto 2>/dev/null || true
+  fi
 
   sleep 3
 
-  # ── Pull trace (retry safe) ────────────────────────────────────
-  adb -s "$DEVICE_ID" pull "$TRACE_REMOTE" "$TRACE_LOCAL" || {
-    echo "Retrying pull..."
-    sleep 2
-    adb -s "$DEVICE_ID" pull "$TRACE_REMOTE" "$TRACE_LOCAL"
-  }
+  # ── 8. Pull trace ──────────────────────────────────────────────
+  if adb -s "$DEVICE_ID" pull "$TRACE_REMOTE" "$TRACE_LOCAL"; then
+    adb -s "$DEVICE_ID" shell rm -f "$TRACE_REMOTE" 2>/dev/null || true
+  else
+    echo "⚠ First pull failed, retrying..."
+    sleep 3
+    if adb -s "$DEVICE_ID" pull "$TRACE_REMOTE" "$TRACE_LOCAL"; then
+      adb -s "$DEVICE_ID" shell rm -f "$TRACE_REMOTE" 2>/dev/null || true
+    else
+      echo "✗ Could not pull trace for run $RUN_NUM — continuing"
+    fi
+  fi
 
-  adb -s "$DEVICE_ID" shell rm -f "$TRACE_REMOTE" 2>/dev/null || true
-
-  # ── 6. Sanity output ───────────────────────────────────────────
+  # ── 9. Sanity output ───────────────────────────────────────────
   if [[ -f "$METRICS_FILE" ]]; then
-    LCP=$(python3 -c "import json; d=json.load(open('$METRICS_FILE')); pages=d.get('pages', []); print((pages[0].get('metrics', {}) if pages else {}).get('lcp', 'n/a'))" 2>/dev/null || echo "n/a")
+    LCP=$(python3 -c "
+import json, sys
+try:
+    d = json.load(open('$METRICS_FILE'))
+    pages = d.get('pages', [])
+    val = (pages[0].get('metrics', {}) if pages else {}).get('lcp')
+    print(f'{val:.0f}' if val else 'n/a')
+except Exception as e:
+    print('n/a')
+" 2>/dev/null)
     echo "LCP: ${LCP} ms"
   fi
 
-  SIZE=$(wc -c < "$TRACE_LOCAL" 2>/dev/null || echo 0)
-  echo "Trace size: $(echo "scale=1; $SIZE/1048576" | bc) MB"
+  if [[ -f "$TRACE_LOCAL" ]]; then
+    SIZE=$(wc -c < "$TRACE_LOCAL" 2>/dev/null || echo 0)
+    echo "Trace: $(echo "scale=1; $SIZE/1048576" | bc) MB"
+  else
+    echo "Trace: missing"
+  fi
 
 done 3< "$RAW_DIR/run_order.txt"
 
+# ── Cleanup battery state ────────────────────────────────────────
 adb -s "$DEVICE_ID" shell dumpsys battery reset >/dev/null 2>&1 || true
 
 # ── Analysis ─────────────────────────────────────────────────────
 echo ""
-echo "Running analysis..."
+echo "→ Running analysis..."
 
 python3 ../analysis/extract_energy.py --raw-dir "$RAW_DIR"
 python3 ../analysis/analyze_runs.py   --raw-dir "$RAW_DIR"
 
-# ── Publish outputs into run-scoped folders ──────────────────────
-mkdir -p "$PROCESSED_DIR" "$ANALYSIS_DIR/plots"
-
+# ── Move outputs ─────────────────────────────────────────────────
 [[ -f "$RAW_DIR/energy_metrics.csv" ]] && mv -f "$RAW_DIR/energy_metrics.csv" "$PROCESSED_DIR/energy_metrics.csv"
-[[ -f "$RAW_DIR/statistics.csv" ]]    && mv -f "$RAW_DIR/statistics.csv" "$ANALYSIS_DIR/statistics.csv"
-[[ -f "$RAW_DIR/report.md" ]]         && mv -f "$RAW_DIR/report.md" "$ANALYSIS_DIR/report.md"
+[[ -f "$RAW_DIR/statistics.csv" ]]     && mv -f "$RAW_DIR/statistics.csv"     "$ANALYSIS_DIR/statistics.csv"
+[[ -f "$RAW_DIR/report.md" ]]          && mv -f "$RAW_DIR/report.md"          "$ANALYSIS_DIR/report.md"
 if [[ -d "$RAW_DIR/plots" ]]; then
   rm -rf "$ANALYSIS_DIR/plots"
   mv "$RAW_DIR/plots" "$ANALYSIS_DIR/plots"
 fi
 
 echo ""
-echo "Done → raw: $RAW_DIR"
-echo "Done → processed: $PROCESSED_DIR"
-echo "Done → analysis: $ANALYSIS_DIR"
+echo "✓ Done"
+echo "  raw:       $RAW_DIR"
+echo "  processed: $PROCESSED_DIR"
+echo "  analysis:  $ANALYSIS_DIR"

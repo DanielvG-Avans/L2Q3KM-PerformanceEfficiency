@@ -176,3 +176,7 @@ danielvginneken@MacBookPro ~ % adb shell pm uninstall --user 0 com.google.androi
 Success
 
 default widgets removed from home screen
+
+in chrome://flags/
+#enable-benchmarking = "Default features states"
+#enable-command-line-on-non-rooted-devices = "Enabled"
