@@ -6,6 +6,8 @@ Input:  data/runs/<timestamp>/raw (contains run_*.json and run_*.perfetto-trace)
 Output: data/runs/<timestamp>/raw/energy_metrics.csv
 
 Method: integrate |current_ua| * voltage_uv over time and convert to mJ.
+Fallback/secondary metric: derive a relative CPU energy proxy from Perfetto
+CPU frequency residency when direct battery-current energy is unreliable.
 """
 
 import argparse
@@ -32,6 +34,9 @@ def extract_energy(trace_path: str) -> dict:
         "trace_path": trace_path,
         "battery_csv_path": str(Path(trace_path).with_suffix(".battery.csv")),
         "energy_total_mj": None,
+        "battery_energy_valid": False,
+        "battery_current_nonzero_samples": None,
+        "battery_current_nonzero_ratio": None,
         "avg_current_ma": None,
         "avg_voltage_v": None,
         "duration_s": None,
@@ -39,6 +44,9 @@ def extract_energy(trace_path: str) -> dict:
         "avg_power_mw": None,
         "avg_cpu_freq_mhz": None,
         "cpu_big_core_pct": None,
+        "cpu_freq_residency_ghz_s": None,
+        "cpu_energy_proxy_score": None,
+        "cpu_energy_proxy_per_s": None,
         "peak_memory_rss_kb": None,
         "frame_janks": None,
         "energy_method": "battery_current_voltage_integration",
@@ -93,6 +101,13 @@ def extract_energy(trace_path: str) -> dict:
             else:
                 result["parse_error"] = "insufficient battery csv samples"
             return
+
+        nonzero_mask = df["current_ua"] != 0
+        nonzero_samples = int(nonzero_mask.sum())
+        nonzero_ratio = float(nonzero_samples / len(df))
+        result["battery_current_nonzero_samples"] = nonzero_samples
+        result["battery_current_nonzero_ratio"] = round(nonzero_ratio, 3)
+        result["battery_energy_valid"] = nonzero_samples >= 2 and nonzero_ratio >= 0.25
 
         df["current_ua"] = df["current_ua"].abs()
         df["power_mw"] = (df["current_ua"] * df["voltage_uv"]) / 1e9
@@ -203,6 +218,20 @@ def extract_energy(trace_path: str) -> dict:
                 # Big core utilisation (cores 0-1 on Exynos 1280 are A78)
                 big_time = cpu_df[cpu_df["cpu"].isin([0, 1])]["dur_ns"].sum()
                 result["cpu_big_core_pct"] = round(100 * big_time / total_cpu_time, 1)
+
+                cpu_df["dur_s"] = cpu_df["dur_ns"] / 1e9
+                cpu_df["freq_ghz"] = cpu_df["freq_khz"] / 1e6
+                cpu_df["cluster_weight"] = np.where(cpu_df["cpu"].isin([0, 1]), 2.0, 1.0)
+                residency = float((cpu_df["freq_ghz"] * cpu_df["dur_s"]).sum())
+                proxy_score = float(
+                    (cpu_df["freq_ghz"] * cpu_df["dur_s"] * cpu_df["cluster_weight"]).sum()
+                )
+                trace_span_s = float(cpu_df["dur_s"].sum() / cpu_df["cpu"].nunique()) if cpu_df["cpu"].nunique() else None
+
+                result["cpu_freq_residency_ghz_s"] = round(residency, 2)
+                result["cpu_energy_proxy_score"] = round(proxy_score, 2)
+                if trace_span_s and trace_span_s > 0:
+                    result["cpu_energy_proxy_per_s"] = round(proxy_score / trace_span_s, 3)
 
         # ── Peak memory (Chrome renderer) ─────────────────────────────────────
         try:

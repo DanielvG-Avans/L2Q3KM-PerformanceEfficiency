@@ -42,8 +42,13 @@ def load_data(raw_dir: Path) -> pd.DataFrame:
         # Energy
         e = d.get("energy", {})
         row["energy_total_mj"]  = e.get("energy_total_mj")
+        row["battery_energy_valid"] = e.get("battery_energy_valid")
+        row["battery_current_nonzero_ratio"] = e.get("battery_current_nonzero_ratio")
         row["avg_power_mw"]     = e.get("avg_power_mw")
         row["avg_cpu_freq_mhz"] = e.get("avg_cpu_freq_mhz")
+        row["cpu_freq_residency_ghz_s"] = e.get("cpu_freq_residency_ghz_s")
+        row["cpu_energy_proxy_score"] = e.get("cpu_energy_proxy_score")
+        row["cpu_energy_proxy_per_s"] = e.get("cpu_energy_proxy_per_s")
         row["peak_memory_kb"]   = e.get("peak_memory_rss_kb")
         row["frame_janks"]      = e.get("frame_janks")
 
@@ -128,6 +133,8 @@ def main():
 
     scenarios = sorted(df["scenario"].dropna().unique())
     print(f"[analyze_runs] Loaded {len(df)} runs across scenarios: {', '.join(scenarios)}")
+    battery_valid_runs = int(df["battery_energy_valid"].fillna(False).sum()) if "battery_energy_valid" in df.columns else 0
+    print(f"[analyze_runs] battery-valid runs: {battery_valid_runs}/{len(df)}")
     protocol_counts = (
         df.groupby(["protocol_mode", "browser_metrics_available"])
           .size()
@@ -144,6 +151,9 @@ def main():
     metrics = [
         ("energy_total_mj",  "Total energy",              "mJ"),
         ("avg_power_mw",     "Average power",             "mW"),
+        ("cpu_energy_proxy_score", "CPU energy proxy score", "score"),
+        ("cpu_energy_proxy_per_s", "CPU energy proxy rate", "score/s"),
+        ("cpu_freq_residency_ghz_s", "CPU frequency residency", "GHz*s"),
         ("lcp_cold_ms",      "LCP — cold load",           "ms"),
         ("fcp_cold_ms",      "FCP — cold load",           "ms"),
         ("ttfb_cold_ms",     "TTFB — cold load",          "ms"),
@@ -204,7 +214,8 @@ def main():
         "# SSR vs CSR Benchmark — Results",
         "",
         f"**Device:** Samsung SM-A536B (Galaxy A53), Android 16, SDK 36  ",
-        f"**Energy method:** Battery current × voltage integration (250ms polling, Perfetto)  ",
+        f"**Direct energy method:** Battery current × voltage integration (250ms polling)  ",
+        f"**Proxy energy method:** Perfetto CPU frequency residency weighted by core class  ",
         f"**Statistical test:** Mann-Whitney U, two-sided, α = 0.05  ",
         f"**Bonferroni-corrected threshold:** α = {alpha_b:.4f} ({n_tests} tests)  ",
         "",
@@ -234,6 +245,8 @@ def main():
         "- Device radios: WiFi only (mobile data, Bluetooth, NFC disabled).",
         "- Device idle ≥45s between runs; runs discarded if start temp >37°C.",
         "- Energy computed as ∫ |I(t)| × V(t) dt over trace window (trapezoidal rule).",
+        "- Battery-current energy under USB-connected runs may be contaminated by external power and should be treated cautiously when many samples are zero-current.",
+        "- CPU energy proxy is an inference from Perfetto CPU frequency residency, weighted more heavily for big cores; it supports relative SSR/CSR comparison, not absolute joule claims.",
         "- SM-A536B does not expose hardware power rail counters; battery polling used.",
         "- Runs without a working CDP connection remain usable for system-level trace and energy analysis, but browser-level metrics are excluded when unavailable.",
         "",

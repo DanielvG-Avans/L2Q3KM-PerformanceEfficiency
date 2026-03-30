@@ -7,6 +7,10 @@ PROTOTYPE_DIR="$SCRIPT_DIR/prototype"
 EXPERIMENT_SCRIPT="$SCRIPT_DIR/experiment/experiment.sh"
 NEXT_PID=""
 APP_PORT="${APP_PORT:-3000}"
+RUNS="${RUNS:-30}"
+SCENARIOS="${SCENARIOS:-static,dynamic,massive}"
+COOL_WAIT_S="${COOL_WAIT_S:-45}"
+BATTERY_POLL_S="${BATTERY_POLL_S:-0.25}"
 
 cleanup() {
   if [[ -n "${NEXT_PID:-}" ]]; then
@@ -63,7 +67,9 @@ adb reverse "tcp:${APP_PORT}" "tcp:${APP_PORT}"
 bash "$EXPERIMENT_SCRIPT" \
   --ssr-url "http://localhost:${APP_PORT}" \
   --csr-url "http://localhost:${APP_PORT}" \
-  --runs 30 \
-  --scenarios static,dynamic,massive \
+  --runs "$RUNS" \
+  --scenarios "$SCENARIOS" \
+  --cool-wait-s "$COOL_WAIT_S" \
+  --battery-poll-s "$BATTERY_POLL_S" \
   --ssr-pages '/ssr?scenario={scenario}' \
   --csr-pages '/csr?scenario={scenario}'

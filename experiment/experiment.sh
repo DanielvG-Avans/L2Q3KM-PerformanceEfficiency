@@ -29,7 +29,7 @@ SSR_PAGES="/ssr?scenario={scenario}"
 CSR_PAGES="/csr?scenario={scenario}"
 MAX_TEMP_C=37
 COOL_WAIT_S=45
-BATTERY_POLL_S=1
+BATTERY_POLL_S=0.25
 RUN_ID="$(date +%Y%m%d_%H%M%S)"
 RUN_ROOT_DIR="${REPO_ROOT}/data/runs/${RUN_ID}"
 RAW_DIR="${RUN_ROOT_DIR}/raw"
@@ -54,6 +54,8 @@ while [[ $# -gt 0 ]]; do
     --ssr-pages)  SSR_PAGES="$2";  shift 2 ;;
     --csr-pages)  CSR_PAGES="$2";  shift 2 ;;
     --device-id)  DEVICE_ID="$2";  shift 2 ;;
+    --cool-wait-s) COOL_WAIT_S="$2"; shift 2 ;;
+    --battery-poll-s) BATTERY_POLL_S="$2"; shift 2 ;;
     *) echo "Unknown argument: $1"; exit 1 ;;
   esac
 done
@@ -147,6 +149,31 @@ stop_battery_poller() {
     wait "$BATTERY_POLL_PID" 2>/dev/null || true
     BATTERY_POLL_PID=""
   fi
+}
+
+summarize_battery_quality() {
+  local battery_csv="$1"
+  python3 - <<'PY' "$battery_csv"
+import csv
+import sys
+
+path = sys.argv[1]
+rows = 0
+nonzero = 0
+
+with open(path, newline="") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        rows += 1
+        try:
+            current = float(row.get("current_ua") or 0)
+        except ValueError:
+            current = 0
+        if current != 0:
+            nonzero += 1
+
+print(f"{rows},{nonzero}")
+PY
 }
 
 trap stop_battery_poller EXIT
@@ -318,6 +345,14 @@ while IFS=, read -r CONDITION SCENARIO <&3; do
     2>&1 | tee "$RAW_DIR/run_${RUN_NUM}_${CONDITION}_${SCENARIO}.log"
 
   stop_battery_poller
+
+  BATTERY_QUALITY="$(summarize_battery_quality "$BATTERY_CSV")"
+  BATTERY_SAMPLES="${BATTERY_QUALITY%%,*}"
+  BATTERY_NONZERO_SAMPLES="${BATTERY_QUALITY##*,}"
+  if [[ "${BATTERY_SAMPLES:-0}" -gt 0 && "${BATTERY_NONZERO_SAMPLES:-0}" -eq 0 ]]; then
+    echo "⚠ Battery current samples were all zero for this run."
+    echo "  Likely cause: the phone is still being powered over USB, so battery-based energy is not valid."
+  fi
 
   # ── 8. Stop Perfetto ───────────────────────────────────────────
   if [[ -n "$PERFETTO_PID" ]]; then
