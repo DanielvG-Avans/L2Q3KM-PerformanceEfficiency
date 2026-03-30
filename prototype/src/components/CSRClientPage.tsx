@@ -31,6 +31,7 @@ export const CSRClientPage = ({
 
     const loadInventory = async () => {
       setIsLoading(true);
+      setInventory(null);
 
       try {
         const response = await fetch(
@@ -39,12 +40,19 @@ export const CSRClientPage = ({
             cache: "no-store",
           },
         );
+        if (!response.ok) {
+          throw new Error(`Inventory request failed with ${response.status}`);
+        }
         const payload = (await response.json()) as { inventory: Product[] };
 
         if (!cancelled) {
           startTransition(() => {
             setInventory(payload.inventory);
           });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("[csr] inventory fetch failed", error);
         }
       } finally {
         if (!cancelled) {
