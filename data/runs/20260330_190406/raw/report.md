@@ -1,7 +1,8 @@
 # SSR vs CSR Benchmark — Results
 
 **Device:** Samsung SM-A536B (Galaxy A53), Android 16, SDK 36  
-**Energy method:** Battery current × voltage integration (250ms polling, Perfetto)  
+**Direct energy method:** Battery current × voltage integration (250ms polling)  
+**Proxy energy method:** Perfetto CPU frequency residency weighted by core class  
 **Statistical test:** Mann-Whitney U, two-sided, α = 0.05  
 **Bonferroni-corrected threshold:** α = 0.0019 (27 tests)  
 
@@ -45,5 +46,7 @@
 - Device radios: WiFi only (mobile data, Bluetooth, NFC disabled).
 - Device idle ≥45s between runs; runs discarded if start temp >37°C.
 - Energy computed as ∫ |I(t)| × V(t) dt over trace window (trapezoidal rule).
+- Battery-current energy under USB-connected runs may be contaminated by external power and should be treated cautiously when many samples are zero-current.
+- CPU energy proxy is an inference from Perfetto CPU frequency residency, weighted more heavily for big cores; it supports relative SSR/CSR comparison, not absolute joule claims.
 - SM-A536B does not expose hardware power rail counters; battery polling used.
 - Runs without a working CDP connection remain usable for system-level trace and energy analysis, but browser-level metrics are excluded when unavailable.
