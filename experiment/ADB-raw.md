@@ -21,17 +21,17 @@ danielvginneken@MacBookPro ~ % adb shell getprop ro.product.model
 SM-A536B
 
 danielvginneken@MacBookPro ~ % adb shell getprop ro.build.fingerprint
-samsung/a53xnaeea/a53x:16/BP2A.250605.031.A3/A536BXXUHGYI9:user/release-keys
+samsung/a53xnaeea/a53x:16/BP2A.250605.031.A3/A536BXXSKGZC1:user/release-keys
 
 danielvginneken@MacBookPro ~ % adb shell getprop ro.build.version.incremental
-A536BXXUHGYI9
+A536BXXSKGZC1
 
 danielvginneken@MacBookPro ~ % adb shell getprop ro.build.version.release
 adb shell getprop ro.build.version.sdk
 adb shell getprop ro.build.version.security_patch
 16
 36
-2025-09-01
+2026-03-05
 
 danielvginneken@MacBookPro ~ % adb shell settings put global auto_time 0
 adb shell settings put global auto_time_zone 0
