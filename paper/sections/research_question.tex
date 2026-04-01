@@ -13,11 +13,11 @@ How does the choice between server-side rendering (SSR) and client-side renderin
 \begin{enumerate}
 	\item How are the SSR and CSR variants implemented in the prototype, and how does this change where the main computation is performed?
 	\item How do direct battery-derived energy measurements differ between SSR and CSR across the \textit{static}, \textit{dynamic}, and \textit{massive} scenarios?
-	\item How do selected browser-side metrics, including LCP, FCP, TTFB, navigation response size, and JavaScript heap sampling, differ between SSR and CSR under the same conditions?
+	\item How do selected browser-side metrics, including LCP, FCP, TTFB, navigation response size, and the JavaScript heap sample, differ between SSR and CSR under the same conditions?
 	\item To what extent do these browser-side metrics help explain any observed differences in mobile energy use?
 	\item What trade-offs between latency, browser-side resource use, and total energy use can be identified from the results?
 \end{enumerate}
 
 \subsection*{Working Expectation}
 
-The working expectation of this study is that SSR will tend to reduce client-side energy use when more of the data-processing workload is completed before delivery to the browser, particularly in the higher-volume scenarios. At the same time, CSR may still perform favorably on some browser-facing metrics. The expectation is therefore not that one strategy will be universally superior, but that the results will show a trade-off between latency-related outcomes and mobile client-side efficiency.
+The working expectation of this study is that SSR will tend to reduce client-side energy use when more of the data-processing workload is completed before delivery to the browser, particularly as the browser-side workload grows. At the same time, CSR may still perform favourably on some browser-facing metrics. The expectation is therefore not that one strategy will be universally superior, but that the results will show a trade-off between latency-related outcomes and mobile client-side efficiency.

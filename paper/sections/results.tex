@@ -1,8 +1,8 @@
 \section{Results}
 
-The results reported in this section are based on the corrected battery-powered wireless benchmark run. This final benchmark contained 60 runs in total: 10 repetitions for each combination of rendering strategy (SSR and CSR) and scenario (\textit{static}, \textit{dynamic}, and \textit{massive}). All 60 runs were battery-valid, browser metrics were available for all 60 runs, and the recorded device temperature remained between 25.1 and 26.1\,$^\circ$C throughout the session. 
+The results reported in this section are based on the corrected battery-powered wireless benchmark run \texttt{20260401\_143839}. This final benchmark contained 60 runs in total: 10 repetitions for each combination of rendering strategy (SSR and CSR) and scenario (\textit{static}, \textit{dynamic}, and \textit{massive}). All 60 runs were battery-valid, browser metrics were available for all 60 runs, and the recorded device temperature remained between 25.1 and 26.1\,$^\circ$C throughout the session.
 
-Because the energy measurements included several high outliers, especially in some CSR conditions, medians and interquartile ranges (IQR) are treated as the main summary statistics.
+Because the energy measurements included several high outliers, especially in some CSR conditions, medians and interquartile ranges (IQR) are treated as the main summary statistics. The full analysis involved 27 within-scenario comparisons, so the Bonferroni-corrected interpretation threshold was $\alpha = 0.0019$.
 
 \begin{table}[htbp]
 \centering
@@ -25,7 +25,7 @@ static & Average power (mW) & 764.0 (30.2) & 855.3 (232.9) & 0.0028 \\
 }
 \end{table}
 
-Table~\ref{tab:wireless-energy-summary} shows that SSR had lower median total energy in all three scenarios. In the \textit{dynamic} scenario, the pattern points in favour of SSR, but the difference was not strong enough to support a firm conclusion, with a median of 6372.2~mJ for SSR and 7040.3~mJ for CSR ($p = 0.2730$). In the \textit{massive} scenario, the gap was larger: SSR reached a median of 5769.5~mJ compared with 9047.8~mJ for CSR ($p = 0.0008$). The \textit{static} scenario showed a similar pattern, with SSR at 5742.9~mJ and CSR at 7960.1~mJ ($p = 0.0013$). After applying the stricter threshold used for multiple comparisons, the \textit{massive} and \textit{static} results still held, while the \textit{dynamic} result did not.
+Table~\ref{tab:wireless-energy-summary} shows that SSR had lower median total energy in all three scenarios. In the \textit{dynamic} scenario, the pattern still favoured SSR, but the difference was not strong enough to support a firm conclusion, with a median of 6372.2~mJ for SSR and 7040.3~mJ for CSR ($p = 0.2730$). In the \textit{massive} scenario, the gap was much larger: SSR reached a median of 5769.5~mJ compared with 9047.8~mJ for CSR ($p = 0.0008$). The \textit{static} scenario showed a similar direction, with SSR at 5742.9~mJ and CSR at 7960.1~mJ ($p = 0.0013$). Under the corrected threshold of $\alpha = 0.0019$, the \textit{massive} and \textit{static} energy differences remained interpretable, while the \textit{dynamic} difference did not.
 
 The energy distributions were not equally spread across conditions. The SSR distributions were comparatively compact in the \textit{static} and \textit{massive} scenarios, with IQR values of 378.8~mJ and 401.8~mJ respectively. By contrast, CSR showed much more variation, especially in the \textit{massive} scenario, where the IQR reached 18662.8~mJ. This wider spread reflects several high-energy CSR runs and further supports using medians rather than arithmetic means as the main point of comparison.
 
@@ -38,7 +38,7 @@ The energy distributions were not equally spread across conditions. The SSR dist
 \label{fig:wireless-energy-distributions}
 \end{figure}
 
-Figure~\ref{fig:wireless-energy-distributions} shows the same pattern visually. The \textit{dynamic} scenario still shows substantial overlap between SSR and CSR despite the lower SSR median, whereas the \textit{static} and especially the \textit{massive} scenarios show a clearer separation in favour of SSR. The figure also shows that the main difference is not only the median level, but also the spread of the distributions. SSR remains relatively compact across scenarios, while CSR becomes much more variable as the workload increases, especially in the \textit{massive} scenario. In that condition, several CSR runs reach much higher energy values than the rest of the distribution, suggesting that client-side processing of the larger dataset was not only more energy-intensive in typical runs, but also less stable from run to run. This is also why a median-based interpretation is important in this dataset.
+Figure~\ref{fig:wireless-energy-distributions} shows the same pattern visually. The \textit{dynamic} scenario still shows substantial overlap between SSR and CSR despite the lower SSR median, whereas the \textit{static} and especially the \textit{massive} scenarios show a clearer separation in favour of SSR. The figure also shows that the main difference is not only the median level, but also the spread of the distributions. SSR remains relatively compact across scenarios, while CSR becomes much more variable as the workload increases, especially in the \textit{massive} scenario. In that condition, several CSR runs reach much higher energy values than the rest of the distribution, suggesting that client-side processing of the larger dataset was not only more energy-intensive in typical runs, but also less stable from run to run. This is one reason why a median-based interpretation is important in this dataset.
 
 \begin{table}[htbp]
 \centering
@@ -51,14 +51,17 @@ Figure~\ref{fig:wireless-energy-distributions} shows the same pattern visually. 
 \tablehead{Scenario} & \tablehead{Metric} & \tablehead{SSR median (IQR)} & \tablehead{CSR median (IQR)} & \tablehead{$p$} \\
 \midrule
 dynamic & LCP (ms) & 3302.0 (16.0) & 3270.0 (25.0) & 0.0010 \\
+dynamic & FCP (ms) & 3302.0 (16.0) & 3270.0 (25.0) & 0.0010 \\
 dynamic & TTFB (ms) & 31.2 (76.8) & 22.1 (46.0) & 0.1859 \\
 dynamic & Navigation response size (KB) & 7.1 (0.0) & 3.9 (0.0) & $< 0.0001$ \\
 dynamic & JS heap sample (MB) & 9.5 (0.0) & 9.5 (0.0) & 1.0000 \\
 massive & LCP (ms) & 3296.0 (16.0) & 3274.0 (26.0) & 0.0532 \\
+massive & FCP (ms) & 3296.0 (16.0) & 3274.0 (26.0) & 0.0532 \\
 massive & TTFB (ms) & 67.8 (83.8) & 21.9 (139.4) & 0.1405 \\
 massive & Navigation response size (KB) & 7.1 (0.0) & 3.9 (0.0) & $< 0.0001$ \\
 massive & JS heap sample (MB) & 9.5 (0.0) & 13.6 (0.0) & $< 0.0001$ \\
 static & LCP (ms) & 3292.0 (16.0) & 3290.0 (15.0) & 1.0000 \\
+static & FCP (ms) & 3286.0 (18.0) & 3290.0 (15.0) & 0.6203 \\
 static & TTFB (ms) & 24.1 (17.6) & 80.7 (135.0) & 0.9698 \\
 static & Navigation response size (KB) & 7.2 (0.0) & 3.9 (0.0) & $< 0.0001$ \\
 static & JS heap sample (MB) & 9.5 (0.0) & 9.5 (0.0) & 1.0000 \\
@@ -67,9 +70,9 @@ static & JS heap sample (MB) & 9.5 (0.0) & 9.5 (0.0) & 1.0000 \\
 }
 \end{table}
 
-The browser-side metrics were more mixed than the energy results, as shown in Table~\ref{tab:wireless-browser-summary}. In the \textit{dynamic} scenario, CSR showed lower median LCP and FCP values than SSR (3270.0~ms versus 3302.0~ms for both metrics, $p = 0.0010$) and also a lower median TTFB (22.1~ms versus 31.2~ms, $p = 0.1859$). In the \textit{massive} scenario, CSR again showed lower median LCP and FCP values (3274.0~ms versus 3296.0~ms, $p = 0.0532$) and a lower median TTFB (21.9~ms versus 67.8~ms, $p = 0.1405$), although these latency differences did not remain after the stricter correction was applied. In the \textit{static} scenario, the picture changed: LCP and FCP were effectively the same between conditions, and the CSR TTFB distribution was much more variable, producing a higher median than SSR.
+The browser-side metrics were more mixed than the energy results, as shown in Table~\ref{tab:wireless-browser-summary}. In the \textit{dynamic} scenario, CSR showed lower median LCP and FCP values than SSR (3270.0~ms versus 3302.0~ms for both metrics, $p = 0.0010$), and these differences remained below the corrected threshold. CSR also showed a lower median TTFB in the same scenario (22.1~ms versus 31.2~ms), but that difference was not decisive. In the \textit{massive} scenario, CSR again showed lower median LCP, FCP, and TTFB values, but none of those latency differences remained strong enough after correction. In the \textit{static} scenario, the picture changed: LCP and FCP were effectively the same between conditions, and the CSR TTFB distribution was much more variable, producing a higher median than SSR.
 
-One result was consistent across all three scenarios: the measured navigation response size was lower for CSR than for SSR, with medians of approximately 3.9~KB for CSR and 7.1--7.2~KB for SSR ($p < 0.0001$ in every scenario). This metric should be read as the size of the initial navigation response rather than the total transferred data for the full CSR route, because CSR also performs a follow-up inventory fetch after hydration. At the same time, Total Blocking Time and Cumulative Layout Shift remained at zero across all runs and therefore did not separate the two conditions. The JavaScript heap sample also stayed equal at 9.5~MB in the \textit{dynamic} and \textit{static} scenarios. The clearest client-side resource difference appeared in the \textit{massive} scenario, where CSR reached a median heap sample of 13.6~MB compared with 9.5~MB for SSR ($p < 0.0001$). This fits the implementation difference in the prototype: CSR fetches raw inventory after hydration and performs the main data transformation step in the browser, whereas SSR performs that work before the page is delivered.
+One result was consistent across all three scenarios: the measured navigation response size was lower for CSR than for SSR, with medians of approximately 3.9~KB for CSR and 7.1--7.2~KB for SSR ($p < 0.0001$ in every scenario). This metric should be read as the size of the initial navigation response rather than the total transferred data for the full CSR route, because CSR also performs a follow-up inventory fetch after hydration. At the same time, Total Blocking Time and Cumulative Layout Shift remained at zero across all runs and therefore did not separate the two conditions. The JavaScript heap sample stayed equal at 9.5~MB in the \textit{dynamic} and \textit{static} scenarios. The clearest client-side resource difference appeared in the \textit{massive} scenario, where CSR reached a median heap sample of 13.6~MB compared with 9.5~MB for SSR ($p < 0.0001$). This matches the implementation difference in the prototype: CSR fetches raw inventory after hydration and performs the main data transformation step in the browser, whereas SSR performs that work before the page is delivered.
 
 \begin{figure}[H]
 \centering
@@ -80,4 +83,4 @@ One result was consistent across all three scenarios: the measured navigation re
 \label{fig:wireless-browser-distributions}
 \end{figure}
 
-Figure~\ref{fig:wireless-browser-distributions} illustrates this trade-off. The dynamic LCP plot shows a modest latency advantage for CSR, the massive TTFB plot shows that CSR often receives the initial response more quickly, and the massive heap plot shows that this advantage is accompanied by more browser-resident state when the client performs the larger processing workload itself.
+Figure~\ref{fig:wireless-browser-distributions} illustrates this trade-off. The dynamic LCP plot shows a small but consistent latency advantage for CSR, the massive TTFB plot shows a directional tendency toward faster initial response in CSR without a decisive statistical result, and the massive heap plot shows that this pattern is accompanied by more browser-resident state when the client performs the larger processing workload itself.
