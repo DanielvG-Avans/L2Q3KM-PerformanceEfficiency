@@ -41,7 +41,7 @@
 \RequirePackage{ragged2e}
 \RequirePackage{tikz}
 \RequirePackage{etoolbox}
-\RequirePackage{natbib}
+\RequirePackage[numbers]{natbib}
 \RequirePackage{csquotes}
 \RequirePackage[pagebackref=true,plainpages=false]{hyperref}
 
