@@ -19,20 +19,21 @@ const toSingleValue = (value?: string | string[]) => {
 export default async function SSRPage({
   searchParams,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     scenario?: string | string[];
     q?: string | string[];
     category?: string | string[];
     sort?: string | string[];
     page?: string | string[];
-  };
+  }>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const query = normalizeQuery({
-    scenario: toSingleValue(searchParams.scenario),
-    q: toSingleValue(searchParams.q),
-    category: toSingleValue(searchParams.category),
-    sort: toSingleValue(searchParams.sort),
-    page: toSingleValue(searchParams.page),
+    scenario: toSingleValue(resolvedSearchParams.scenario),
+    q: toSingleValue(resolvedSearchParams.q),
+    category: toSingleValue(resolvedSearchParams.category),
+    sort: toSingleValue(resolvedSearchParams.sort),
+    page: toSingleValue(resolvedSearchParams.page),
   });
   const inventory = getInventory(query.scenario);
   const view = buildStoreFrontView(inventory, query, PAGE_SIZE);

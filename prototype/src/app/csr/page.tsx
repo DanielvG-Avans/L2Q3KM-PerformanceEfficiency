@@ -11,23 +11,24 @@ const toSingleValue = (value?: string | string[]) => {
   return value || "";
 };
 
-export default function CSRPage({
+export default async function CSRPage({
   searchParams,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     scenario?: string | string[];
     q?: string | string[];
     category?: string | string[];
     sort?: string | string[];
     page?: string | string[];
-  };
+  }>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const initialQuery = normalizeQuery({
-    scenario: toSingleValue(searchParams.scenario),
-    q: toSingleValue(searchParams.q),
-    category: toSingleValue(searchParams.category),
-    sort: toSingleValue(searchParams.sort),
-    page: toSingleValue(searchParams.page),
+    scenario: toSingleValue(resolvedSearchParams.scenario),
+    q: toSingleValue(resolvedSearchParams.q),
+    category: toSingleValue(resolvedSearchParams.category),
+    sort: toSingleValue(resolvedSearchParams.sort),
+    page: toSingleValue(resolvedSearchParams.page),
   });
 
   return <CSRClientPage initialQuery={initialQuery} />;
