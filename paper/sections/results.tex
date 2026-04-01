@@ -1,9 +1,5 @@
 \section{Results}
 
-% Placeholder figure labels if the generated analysis plots are added later:
-% fig:wireless-energy-distributions
-% fig:wireless-browser-distributions
-
 The results reported in this section are based on the corrected battery-powered wireless benchmark run. This final benchmark contained 60 runs in total: 10 repetitions for each combination of rendering strategy (SSR and CSR) and scenario (\textit{static}, \textit{dynamic}, and \textit{massive}). All 60 runs were battery-valid, all 60 runs produced browser metrics through the Chrome DevTools Protocol path, and the recorded device temperature remained between 25.1 and 26.1\,$^\circ$C throughout the session. Because the energy measurements contained several high-value observations, especially in some CSR conditions, medians and interquartile ranges (IQR) are treated as the primary descriptive statistics.
 
 \begin{table}[htbp]
@@ -31,6 +27,17 @@ Table~\ref{tab:wireless-energy-summary} shows that SSR yielded lower median tota
 
 The spread of the energy distributions was not uniform across conditions. The SSR distributions were comparatively compact in the \textit{static} and \textit{massive} scenarios, with IQR values of 378.8~mJ and 401.8~mJ respectively. By contrast, CSR showed notably wider dispersion, especially in the \textit{massive} scenario, where the IQR reached 18662.8~mJ. This wide spread reflects several high-energy CSR runs and reinforces the decision to interpret the corrected wireless benchmark primarily through medians rather than arithmetic means.
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/static_energy_total_mj.png}\hfill
+\includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/dynamic_energy_total_mj.png}\hfill
+\includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/massive_energy_total_mj.png}
+\caption{Distribution plots for total energy in the corrected wireless benchmark, shown separately for the \textit{static}, \textit{dynamic}, and \textit{massive} scenarios. The \textit{massive} CSR condition shows the widest spread and the clearest high-energy outliers, while SSR remains comparatively compact in the \textit{static} and \textit{massive} scenarios.}
+\label{fig:wireless-energy-distributions}
+\end{figure}
+
+Figure~\ref{fig:wireless-energy-distributions} visualises the same pattern. The \textit{dynamic} scenario shows overlap between SSR and CSR despite a lower SSR median, whereas the \textit{static} and especially the \textit{massive} scenarios show a clearer separation in favour of SSR. The figure also makes the CSR outliers more visible than the summary table alone, which is why the median-based interpretation is important in this dataset.
+
 \begin{table}[htbp]
 \centering
 \caption{Selected browser and client-resource metrics for the corrected wireless benchmark. Medians are reported with IQR in parentheses.}
@@ -43,16 +50,16 @@ The spread of the energy distributions was not uniform across conditions. The SS
 \midrule
 dynamic & LCP (ms) & 3302.0 (16.0) & 3270.0 (25.0) & 0.0010 \\
 dynamic & TTFB (ms) & 31.2 (76.8) & 22.1 (46.0) & 0.1859 \\
-dynamic & Transfer size (KB) & 7.1 (0.0) & 3.9 (0.0) & $< 0.0001$ \\
-dynamic & JS heap peak (MB) & 9.5 (0.0) & 9.5 (0.0) & 1.0000 \\
+dynamic & Navigation response size (KB) & 7.1 (0.0) & 3.9 (0.0) & $< 0.0001$ \\
+dynamic & JS heap sample (MB) & 9.5 (0.0) & 9.5 (0.0) & 1.0000 \\
 massive & LCP (ms) & 3296.0 (16.0) & 3274.0 (26.0) & 0.0532 \\
 massive & TTFB (ms) & 67.8 (83.8) & 21.9 (139.4) & 0.1405 \\
-massive & Transfer size (KB) & 7.1 (0.0) & 3.9 (0.0) & $< 0.0001$ \\
-massive & JS heap peak (MB) & 9.5 (0.0) & 13.6 (0.0) & $< 0.0001$ \\
+massive & Navigation response size (KB) & 7.1 (0.0) & 3.9 (0.0) & $< 0.0001$ \\
+massive & JS heap sample (MB) & 9.5 (0.0) & 13.6 (0.0) & $< 0.0001$ \\
 static & LCP (ms) & 3292.0 (16.0) & 3290.0 (15.0) & 1.0000 \\
 static & TTFB (ms) & 24.1 (17.6) & 80.7 (135.0) & 0.9698 \\
-static & Transfer size (KB) & 7.2 (0.0) & 3.9 (0.0) & $< 0.0001$ \\
-static & JS heap peak (MB) & 9.5 (0.0) & 9.5 (0.0) & 1.0000 \\
+static & Navigation response size (KB) & 7.2 (0.0) & 3.9 (0.0) & $< 0.0001$ \\
+static & JS heap sample (MB) & 9.5 (0.0) & 9.5 (0.0) & 1.0000 \\
 \bottomrule
 \end{tabularx}
 }
@@ -60,4 +67,15 @@ static & JS heap peak (MB) & 9.5 (0.0) & 9.5 (0.0) & 1.0000 \\
 
 The browser-facing metrics were more mixed than the energy results, as shown in Table~\ref{tab:wireless-browser-summary}. In the \textit{dynamic} scenario, CSR achieved lower median LCP and FCP values than SSR (3270.0~ms versus 3302.0~ms for both metrics, $p = 0.0010$) and also a lower median TTFB (22.1~ms versus 31.2~ms, $p = 0.1859$). In the \textit{massive} scenario, CSR again showed lower median LCP and FCP values (3274.0~ms versus 3296.0~ms, $p = 0.0532$) and a lower median TTFB (21.9~ms versus 67.8~ms, $p = 0.1405$), although these latency differences did not meet the corrected threshold. In the \textit{static} scenario, the latency picture changed: LCP and FCP were effectively equivalent between conditions, and the CSR TTFB distribution was substantially more variable, producing a higher median than SSR.
 
-One result was consistent across all three scenarios: the measured navigation transfer size was lower for CSR than for SSR, with medians of approximately 3.9~KB for CSR and 7.1--7.2~KB for SSR ($p < 0.0001$ in every scenario). At the same time, Total Blocking Time and Cumulative Layout Shift remained at zero across all runs and therefore did not differentiate the conditions. The JavaScript heap metric also stayed equal at 9.5~MB in the \textit{dynamic} and \textit{static} scenarios. The clearest client-side resource difference appeared in the \textit{massive} scenario, where CSR reached a median heap peak of 13.6~MB compared with 9.5~MB for SSR ($p < 0.0001$). This result is consistent with the implementation difference in the prototype: CSR fetches raw inventory after hydration and performs the main data transformation step in the browser, whereas SSR performs that work before the page is delivered.
+One result was consistent across all three scenarios: the measured navigation response size was lower for CSR than for SSR, with medians of approximately 3.9~KB for CSR and 7.1--7.2~KB for SSR ($p < 0.0001$ in every scenario). This metric should be interpreted as the size of the initial navigation response rather than the total transferred data for the full CSR route, because CSR also performs a follow-up inventory fetch after hydration. At the same time, Total Blocking Time and Cumulative Layout Shift remained at zero across all runs and therefore did not differentiate the conditions. The JavaScript heap sample also stayed equal at 9.5~MB in the \textit{dynamic} and \textit{static} scenarios. The clearest client-side resource difference appeared in the \textit{massive} scenario, where CSR reached a median heap sample of 13.6~MB compared with 9.5~MB for SSR ($p < 0.0001$). This result is consistent with the implementation difference in the prototype: CSR fetches raw inventory after hydration and performs the main data transformation step in the browser, whereas SSR performs that work before the page is delivered.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/dynamic_lcp_cold_ms.png}\hfill
+\includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/massive_ttfb_cold_ms.png}\hfill
+\includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/massive_js_heap_mb.png}
+\caption{Selected browser and client-resource distributions from the corrected wireless benchmark. From left to right: dynamic LCP, massive TTFB, and massive JavaScript heap sample. Together these plots illustrate the mixed pattern in the browser-facing metrics: CSR tends to show lower latency in some cases, while also incurring a larger browser-side memory footprint in the most data-heavy scenario.}
+\label{fig:wireless-browser-distributions}
+\end{figure}
+
+Figure~\ref{fig:wireless-browser-distributions} provides examples of this trade-off. The dynamic LCP plot shows a modest latency advantage for CSR, the massive TTFB plot shows that CSR often receives the initial response more quickly, and the massive heap plot shows that this advantage is accompanied by more browser-resident state when the client performs the larger processing workload itself.
