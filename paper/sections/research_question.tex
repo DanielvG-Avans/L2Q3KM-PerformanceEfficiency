@@ -1,29 +1,23 @@
 \section{Research Gap and Questions}
 
-The literature shows that SSR and CSR are extensively compared on speed-related metrics (such as TTI and LCP) and SEO outcomes. Resource-related metrics on mobile client devices are less often treated as the primary evaluation criterion. In addition, energy consumption is frequently discussed indirectly and only rarely measured in direct relation to rendering strategy.
+Existing comparisons between SSR and CSR often focus on loading performance, SEO, or developer experience. Fewer studies treat mobile client-side resource efficiency as the primary outcome, and direct energy measurements are especially uncommon. This leaves limited controlled evidence on how rendering strategy affects client-side energy use when the application stack, interface, and workload are otherwise kept comparable.
 
-This creates a clear research gap: there is limited controlled evidence comparing SSR and CSR with resource efficiency as the central focus in a mobile context.
+This study addresses that gap by comparing SSR and CSR in a controlled Next.js prototype while holding the application structure constant and varying where the main data-processing workload is performed.
 
 \subsection{Main Question}
 
-How does the choice between server-side rendering (SSR) and client-side rendering (CSR) affect mobile client-side energy use and selected browser-side resource metrics during page rendering, and what does this mean for developing resource-efficient frontends?
+How does the choice between server-side rendering (SSR) and client-side rendering (CSR) affect mobile client-side energy use and selected browser-side metrics in a comparable Next.js web application?
 
 \subsection{Sub-questions}
 
 \begin{enumerate}
-	\item What are the technical differences between SSR and CSR regarding client-side processing during the render process, particularly in relation to JavaScript execution and DOM manipulation?
-	\item How do direct energy measurements differ between SSR and CSR across varying data sizes in otherwise comparable web applications on a mobile device?
-	\item How do browser-side metrics such as LCP, FCP, TTFB, navigation response size, and JavaScript heap sampling differ between SSR and CSR under the same conditions?
-	\item To what extent do these browser-side metrics help interpret differences in client-side energy use across rendering scenarios?
-	\item In which scenarios (page complexity, data volume, network conditions) does each rendering strategy demonstrate better resource efficiency on mobile devices?
+	\item How are the SSR and CSR variants implemented in the prototype, and how does this change where the main computation is performed?
+	\item How do direct battery-derived energy measurements differ between SSR and CSR across the \textit{static}, \textit{dynamic}, and \textit{massive} scenarios?
+	\item How do selected browser-side metrics, including LCP, FCP, TTFB, navigation response size, and JavaScript heap sampling, differ between SSR and CSR under the same conditions?
+	\item To what extent do these browser-side metrics help explain any observed differences in mobile energy use?
+	\item What trade-offs between latency, browser-side resource use, and total energy use can be identified from the results?
 \end{enumerate}
 
 \subsection*{Working Expectation}
 
-Based on the literature and technical analysis, this study expects that server-side rendering will on average be more resource-efficient on mobile devices than client-side rendering, particularly as data volumes increase. The primary reason is that with SSR, the main data-preparation step is shifted away from the client before the page is delivered. With CSR, JavaScript must still fetch the dataset after hydration and perform the equivalent transformation in the browser. Research by Clapton et al. (2025) suggests that these differences become more visible as workloads grow, while Gaddam (2025) reports lower client-side CPU and memory demand for SSR-oriented implementations during the render phase.
-
-However, CSR could prove more efficient in certain scenarios. A client-rendered shell can reduce the initial navigation payload and may support favorable paint-related metrics when expensive work is deferred until after hydration. In addition, architectural considerations matter: SSR requires server-side rendering capacity, while CSR can keep the first response small and shift more logic to the browser.
-
-Regarding energy consumption specifically, Thiagarajan et al. (2012) demonstrated that JavaScript and CSS processing in the browser significantly influences mobile device energy consumption, and that complex JavaScript can be as expensive to render as images. This foundational research supports the hypothesis that rendering strategies directly affect mobile device energy efficiency. Kalliola and Vepsäläinen (2025) further emphasize that energy estimation for websites is methodologically difficult, which strengthens the case for carefully controlled measurements and cautious interpretation.
-
-Furthermore, CSR does offer advantages in hosting architecture. A fully client-side application can be statically hosted via a CDN with minimal server-side computation, though this must be weighed against the increased client-side processing burden.
+The working expectation of this study is that SSR will tend to reduce client-side energy use when more of the data-processing workload is completed before delivery to the browser, particularly in the higher-volume scenarios. At the same time, CSR may still perform favorably on some browser-facing metrics. The expectation is therefore not that one strategy will be universally superior, but that the results will show a trade-off between latency-related outcomes and mobile client-side efficiency.
