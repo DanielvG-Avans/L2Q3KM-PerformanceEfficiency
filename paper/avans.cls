@@ -35,6 +35,7 @@
 \RequirePackage{titletoc}
 \RequirePackage{setspace}
 \RequirePackage{caption}
+\RequirePackage{float}
 \RequirePackage{booktabs}
 \RequirePackage{tabularx}
 \RequirePackage{array}
