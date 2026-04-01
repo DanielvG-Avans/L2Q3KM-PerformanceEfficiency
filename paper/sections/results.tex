@@ -27,7 +27,7 @@ Table~\ref{tab:wireless-energy-summary} shows that SSR yielded lower median tota
 
 The spread of the energy distributions was not uniform across conditions. The SSR distributions were comparatively compact in the \textit{static} and \textit{massive} scenarios, with IQR values of 378.8~mJ and 401.8~mJ respectively. By contrast, CSR showed notably wider dispersion, especially in the \textit{massive} scenario, where the IQR reached 18662.8~mJ. This wide spread reflects several high-energy CSR runs and reinforces the decision to interpret the corrected wireless benchmark primarily through medians rather than arithmetic means.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/static_energy_total_mj.png}\hfill
 \includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/dynamic_energy_total_mj.png}\hfill
@@ -69,7 +69,7 @@ The browser-facing metrics were more mixed than the energy results, as shown in 
 
 One result was consistent across all three scenarios: the measured navigation response size was lower for CSR than for SSR, with medians of approximately 3.9~KB for CSR and 7.1--7.2~KB for SSR ($p < 0.0001$ in every scenario). This metric should be interpreted as the size of the initial navigation response rather than the total transferred data for the full CSR route, because CSR also performs a follow-up inventory fetch after hydration. At the same time, Total Blocking Time and Cumulative Layout Shift remained at zero across all runs and therefore did not differentiate the conditions. The JavaScript heap sample also stayed equal at 9.5~MB in the \textit{dynamic} and \textit{static} scenarios. The clearest client-side resource difference appeared in the \textit{massive} scenario, where CSR reached a median heap sample of 13.6~MB compared with 9.5~MB for SSR ($p < 0.0001$). This result is consistent with the implementation difference in the prototype: CSR fetches raw inventory after hydration and performs the main data transformation step in the browser, whereas SSR performs that work before the page is delivered.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/dynamic_lcp_cold_ms.png}\hfill
 \includegraphics[width=0.32\linewidth]{../data/runs/20260401_143839/analysis/plots/massive_ttfb_cold_ms.png}\hfill
