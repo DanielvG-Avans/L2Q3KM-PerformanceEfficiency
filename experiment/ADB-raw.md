@@ -180,3 +180,5 @@ default widgets removed from home screen
 in chrome://flags/
 #enable-benchmarking = "Default features states"
 #enable-command-line-on-non-rooted-devices = "Enabled"
+
+adb shell settings put system screen_off_timeout 2147483647

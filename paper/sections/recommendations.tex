@@ -1,3 +1,7 @@
 \section{Recommendations}
 
-[PLACEHOLDER]
+For mobile-oriented front-end development, the results of this study suggest that rendering strategy should be selected by workload and objective rather than by a general rule. When the application must process larger datasets on constrained client devices, SSR is the safer default in this prototype, because it reduced median client-side energy use in all three scenarios and showed the clearest advantage in the static and massive cases. When the primary concern is a lightweight initial response or a shell-first loading pattern, CSR can still be attractive, but that choice should be evaluated against the additional client-side processing required after hydration.
+
+For future implementations, it is advisable to measure energy and browser metrics together rather than relying on speed metrics alone. The corrected benchmark showed that earlier paint-related behavior did not always align with lower total client-side energy use. In practical terms, teams should validate rendering decisions on representative target devices, use battery-powered measurements when energy is the primary outcome, and interpret outlier-prone data with medians and non-parametric methods.
+
+For follow-up research, the strongest improvements would be methodological rather than conceptual. Repeating the study on multiple devices, adding direct measurement hardware where possible, and extending the benchmark with user interaction scenarios would strengthen generalisability. Within this repository specifically, it would also be useful to expand the analysis scripts so that total CSR network transfer is represented more explicitly, rather than focusing mainly on the initial navigation response.

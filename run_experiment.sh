@@ -11,6 +11,7 @@ RUNS="${RUNS:-10}"
 SCENARIOS="${SCENARIOS:-static,dynamic,massive}"
 COOL_WAIT_S="${COOL_WAIT_S:-45}"
 BATTERY_POLL_S="${BATTERY_POLL_S:-0.25}"
+DEVICE_ID="${DEVICE_ID:-}"
 
 cleanup() {
   if [[ -n "${NEXT_PID:-}" ]]; then
@@ -60,8 +61,15 @@ fi
 
 wait_for_server "http://127.0.0.1:${APP_PORT}"
 
+ADB_ARGS=()
+EXPERIMENT_ARGS=()
+if [[ -n "$DEVICE_ID" ]]; then
+  ADB_ARGS=(-s "$DEVICE_ID")
+  EXPERIMENT_ARGS+=(--device-id "$DEVICE_ID")
+fi
+
 # Tunnel localhost port to Android device.
-adb reverse "tcp:${APP_PORT}" "tcp:${APP_PORT}"
+adb "${ADB_ARGS[@]+${ADB_ARGS[@]}}" reverse "tcp:${APP_PORT}" "tcp:${APP_PORT}"
 
 # Run the main experiment script with localhost URLs.
 bash "$EXPERIMENT_SCRIPT" \
@@ -71,5 +79,6 @@ bash "$EXPERIMENT_SCRIPT" \
   --scenarios "$SCENARIOS" \
   --cool-wait-s "$COOL_WAIT_S" \
   --battery-poll-s "$BATTERY_POLL_S" \
+  "${EXPERIMENT_ARGS[@]+${EXPERIMENT_ARGS[@]}}" \
   --ssr-pages '/ssr?scenario={scenario}' \
   --csr-pages '/csr?scenario={scenario}'

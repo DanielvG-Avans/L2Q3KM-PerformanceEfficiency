@@ -1,16 +1,24 @@
 \section{Research Design \& Methods}
 
-To investigate the effect of SSR and CSR on CPU and memory usage on mobile devices, a controlled experimental approach was used. The objective was to isolate the difference between both render strategies while minimizing confounding factors.
+This study followed a design-oriented research approach in which literature-based analysis, prototyping, and benchmark testing were combined. The goal was to investigate how server-side rendering (SSR) and client-side rendering (CSR) affect mobile client-side efficiency in a controlled setting. Rather than comparing different frameworks or unrelated architectures, the study used one comparable web application and varied primarily where the main computation took place.
 
-The study started with a literature review to analyze existing insights on render strategies, CPU usage, and energy consumption. A problem analysis was then conducted to distinguish performance as speed from performance as resource efficiency.
+Following the ICT Research Methods framework, the methodological process combined \textit{library}, \textit{field}, \textit{workshop}, \textit{lab}, and \textit{showroom} activities. A literature study and best-practices analysis were first used to position the work within existing SSR/CSR research and to identify how a fair comparison could be designed. This was followed by problem analysis and domain modelling, in which the central research problem was defined as client-side resource efficiency on a mobile device rather than loading speed alone. On that basis, a prototype was constructed and subsequently evaluated through repeated benchmark testing and statistical analysis. Table~\ref{tab:method-overview-2026} summarises the methods used in the project.
 
-One web application was implemented in two variants: server-side rendering (SSR) and client-side rendering (CSR). Both variants had the same functionality, dataset, and user interactions. The render strategy was the only intentional difference between conditions, enabling direct comparison.
+The prototype was implemented in Next.js and contained two routes: an SSR route and a CSR route. Both routes rendered the same storefront interface, used the same mock inventory model, and exposed the same controls for scenario, search term, category, sort order, and pagination. The key design choice was that the two variants remained within one shared stack so that the comparison isolated rendering strategy rather than framework differences.
 
-During the test phase, the application was hosted on a server in the same network as the mobile test device. CPU usage and memory usage were measured during initial rendering and during interaction events. Measurements were repeated across multiple runs to reduce the impact of outliers.
+The deliberate difference between the variants was where the expensive data preparation occurred. In the SSR variant, the server read the selected scenario, loaded the inventory, and performed filtering, sorting, pagination, product decoration, and summary construction before returning the rendered page. In the CSR variant, the browser first loaded the page shell, then fetched the raw inventory from an API endpoint after hydration, after which the client performed the equivalent filtering, sorting, pagination, decoration, and summary construction locally. This design kept the resulting interface comparable while shifting the main computational burden between server and client.
 
-SSR and CSR were compared directly using a benchmark protocol. The dataset was then analyzed with descriptive statistics and a two-sided Mann-Whitney U test ($\alpha = 0.05$), with Bonferroni correction for multiple comparisons.
+Three dataset scenarios were implemented in the prototype. The \textit{static} scenario contained 72 records and represented a small editorial catalogue. The \textit{dynamic} scenario contained 6{,}000 records and represented a medium-sized live catalogue. The \textit{massive} scenario contained 24{,}000 records and represented a larger marketplace-style stress case. Combined with the two rendering strategies, this yielded six benchmark conditions: SSR-static, SSR-dynamic, SSR-massive, CSR-static, CSR-dynamic, and CSR-massive.
 
-\begin{table}[htbp]
+The prototype was evaluated through a controlled benchmark procedure. The experiment was orchestrated through shell and analysis scripts in the repository. For each benchmark session, the Next.js application was built and started locally, exposed to the Android device through \texttt{adb reverse}, and exercised through an automated Puppeteer-based scenario over the Chrome DevTools Protocol. Runs were randomised across all six conditions to reduce ordering effects. The final wireless benchmark used 10 repetitions per condition, resulting in 60 total runs. Between runs, Chrome was force-stopped, the device was returned to a neutral state, and a cooldown period of 45 seconds was applied.
+
+Measurements were collected on a Samsung Galaxy A53 (SM-A536B). Browser metrics for the initial page load included time to first byte (TTFB), first contentful paint (FCP), largest contentful paint (LCP), total blocking time (TBT), cumulative layout shift (CLS), navigation response size, and a JavaScript heap sample. Direct energy was estimated from repeated battery polling via \texttt{adb dumpsys battery}, integrating absolute current and voltage over time. In the final wireless dataset, battery polling occurred every 0.25 seconds. Device temperature was logged before each run to monitor thermal stability, and screen brightness was fixed to reduce measurement variation.
+
+An important methodological correction was made during the study. Earlier USB-connected runs were useful for validating the tooling and general collection stability, but USB power could contaminate direct battery-current measurements. For that reason, the final energy analysis is based primarily on the battery-powered wireless run. This should be understood as a measurement limitation that was identified and corrected during the research process rather than as a failure of the overall design.
+
+The resulting run data were processed with repository analysis scripts that extracted per-run energy metrics, aggregated browser measurements, and generated descriptive and inferential statistics. Because the final wireless dataset contained visible energy outliers, medians and interquartile ranges were treated as the primary descriptive statistics. To compare SSR and CSR within each scenario, a Mann-Whitney U test was used. Because many comparisons were made, the threshold for interpreting results was made stricter using a Bonferroni correction. Finally, peer review was used as a showroom-oriented validation step to assess whether the methodological choices and interpretation were consistent and defensible.
+
+\begin{table}[H]
 \centering
 \caption{Method overview used in this study.}
 \label{tab:method-overview-2026}
@@ -23,11 +31,11 @@ SSR and CSR were compared directly using a benchmark protocol. The dataset was t
 Orientation & Literature study & Library & Establishing the known SSR and CSR performance landscape \\
 Orientation & Best-practices analysis & Library & Identifying practical optimization factors for fair implementation \\
 Analysis & Problem analysis & Field & Defining performance as resource efficiency instead of only speed \\
-Analysis & Domain modelling & Field & Mapping architectural differences between render strategies \\
-Design & Prototyping & Workshop & Building two functionally equivalent application variants \\
-Test phase & Non-functional test & Lab & Measuring CPU and memory behavior under controlled conditions \\
-Test phase & Benchmark test & Showroom & Comparing SSR and CSR outcomes directly across repeated runs \\
-Analysis & Statistical analysis & Field & Computing medians, IQR, effect size, and significance tests \\
+Analysis & Domain modelling & Field & Mapping how server-side and client-side computation differ within one shared stack \\
+Design & Prototyping & Workshop & Building one storefront prototype with SSR and CSR variants across three dataset scenarios \\
+Test phase & Benchmark test & Lab & Measuring battery-derived energy, browser metrics, and thermal stability under controlled conditions \\
+Analysis & Descriptive statistics & Field & Summarising distributions with medians and interquartile ranges \\
+Analysis & Inferential statistics & Lab & Comparing conditions with Mann-Whitney U and Bonferroni correction \\
 Validation & Peer review & Showroom & Checking method quality and interpretation consistency \\
 \bottomrule
 \end{tabularx}
