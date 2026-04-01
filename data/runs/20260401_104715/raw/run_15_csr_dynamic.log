@@ -1,3 +1,0 @@
-  [puppeteer] 1/1 → http://localhost:3000/csr?scenario=dynamic
-  [puppeteer]   LCP=3304ms  FCP=3304ms  TBT=0ms  TTFB=19ms
-  [puppeteer] ✓ Saved → /Users/danielvginneken/Desktop/Research_Paper/data/runs/20260401_104715/raw/run_15_csr_dynamic.json

@@ -1,3 +1,0 @@
-  [puppeteer] 1/1 → http://localhost:3000/ssr?scenario=static
-  [puppeteer]   LCP=3300ms  FCP=3300ms  TBT=0ms  TTFB=23ms
-  [puppeteer] ✓ Saved → /Users/danielvginneken/Desktop/Research_Paper/data/runs/20260401_104715/raw/run_43_ssr_static.json
