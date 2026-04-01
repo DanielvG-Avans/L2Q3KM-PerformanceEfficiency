@@ -69,7 +69,7 @@ if [[ -n "$DEVICE_ID" ]]; then
 fi
 
 # Tunnel localhost port to Android device.
-adb "${ADB_ARGS[@]}" reverse "tcp:${APP_PORT}" "tcp:${APP_PORT}"
+adb "${ADB_ARGS[@]+${ADB_ARGS[@]}}" reverse "tcp:${APP_PORT}" "tcp:${APP_PORT}"
 
 # Run the main experiment script with localhost URLs.
 bash "$EXPERIMENT_SCRIPT" \
@@ -79,6 +79,6 @@ bash "$EXPERIMENT_SCRIPT" \
   --scenarios "$SCENARIOS" \
   --cool-wait-s "$COOL_WAIT_S" \
   --battery-poll-s "$BATTERY_POLL_S" \
-  "${EXPERIMENT_ARGS[@]}" \
+  "${EXPERIMENT_ARGS[@]+${EXPERIMENT_ARGS[@]}}" \
   --ssr-pages '/ssr?scenario={scenario}' \
   --csr-pages '/csr?scenario={scenario}'
