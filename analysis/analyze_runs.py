@@ -3,7 +3,8 @@
 analyze_runs.py — Generate statistics, report, and plots from run raw data.
 
 Input:  data/runs/<timestamp>/raw (run_*.json files with metrics)
-Output: statistics.csv, report.md, and plots/ in the same raw directory
+Output: statistics.csv and report.md in the raw directory, plus plots in the
+run analysis directory
 """
 
 import argparse
@@ -113,6 +114,70 @@ def boxplot(ssr: pd.Series, csr: pd.Series, title: str, unit: str, path: str):
     plt.savefig(path, bbox_inches="tight"); plt.close()
 
 
+def energy_lineplot(stats_df: pd.DataFrame, path: str):
+    energy_df = stats_df[stats_df["metric"] == "Total energy"].copy()
+    if energy_df.empty:
+        return
+
+    scenario_sizes = {
+        "static": 72,
+        "dynamic": 6000,
+        "massive": 24000,
+    }
+    scenario_labels = {
+        "static": "Static",
+        "dynamic": "Dynamic",
+        "massive": "Massive",
+    }
+
+    energy_df["dataset_size"] = energy_df["scenario"].map(scenario_sizes)
+    energy_df = (
+        energy_df.dropna(subset=["dataset_size"])
+        .sort_values("dataset_size")
+        .reset_index(drop=True)
+    )
+    if energy_df.empty:
+        return
+
+    x = energy_df["dataset_size"].astype(float).to_numpy()
+
+    fig, ax = plt.subplots(figsize=(6.6, 4.1))
+    ax.plot(
+        x,
+        energy_df["median_ssr"],
+        color="#4E79A7",
+        marker="o",
+        markersize=6.5,
+        linewidth=2.2,
+        label="SSR",
+    )
+    ax.plot(
+        x,
+        energy_df["median_csr"],
+        color="#E15759",
+        marker="o",
+        markersize=6.5,
+        linewidth=2.2,
+        label="CSR",
+    )
+
+    ax.set_xscale("log")
+    ax.set_xticks(x)
+    ax.set_xticklabels(
+        [
+            f"{scenario_labels[row.scenario]}\n{int(row.dataset_size):,}"
+            for row in energy_df.itertuples()
+        ]
+    )
+    ax.set_xlabel("Dataset size (records, log scale)")
+    ax.set_ylabel("Median total energy (mJ)")
+    ax.grid(axis="y", linestyle="--", linewidth=0.7, alpha=0.35)
+    ax.legend(frameon=False, loc="upper left")
+    plt.tight_layout()
+    plt.savefig(path, bbox_inches="tight")
+    plt.close()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--raw-dir", help="Path to a run raw directory (preferred).")
@@ -124,6 +189,9 @@ def main():
         parser.error("one of --raw-dir or --results-dir is required")
 
     rd = Path(raw_dir_arg)
+    run_dir = rd.parent if rd.name == "raw" else rd
+    analysis_dir = run_dir / "analysis"
+    analysis_dir.mkdir(exist_ok=True)
     if args.results_dir and not args.raw_dir:
         print("[analyze_runs] INFO: --results-dir is deprecated; use --raw-dir.")
 
@@ -166,7 +234,8 @@ def main():
         ("frame_janks",      "Frame janks",               "count"),
     ]
 
-    plots_dir = rd / "plots"; plots_dir.mkdir(exist_ok=True)
+    plots_dir = analysis_dir / "plots"
+    plots_dir.mkdir(exist_ok=True)
     results = []
 
     for scenario in scenarios:
@@ -204,6 +273,14 @@ def main():
     # ── Save stats ─────────────────────────────────────────────────────────────
     stats_df = pd.DataFrame(results)
     stats_df.to_csv(rd / "statistics.csv", index=False)
+
+    try:
+        energy_lineplot(
+            stats_df,
+            str(analysis_dir / "energy_by_dataset_size_line.png"),
+        )
+    except Exception:
+        pass
 
     # ── Bonferroni-corrected significance threshold ────────────────────────────
     n_tests = len([r for r in results if "p_value" in r])
@@ -252,7 +329,10 @@ def main():
         "",
     ]
     (rd / "report.md").write_text("\n".join(lines))
-    print(f"\n[analyze_runs] OK: report.md, statistics.csv, plots/ saved in {rd}")
+    print(
+        f"\n[analyze_runs] OK: statistics/report saved in {rd}; "
+        f"plots saved in {analysis_dir}"
+    )
 
 
 if __name__ == "__main__":
