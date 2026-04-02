@@ -44,7 +44,7 @@
 \RequirePackage{etoolbox}
 \RequirePackage[numbers]{natbib}
 \RequirePackage{csquotes}
-\RequirePackage[pagebackref=true,plainpages=false]{hyperref}
+\RequirePackage[plainpages=false]{hyperref}
 
 % Brand palette (Avans-inspired)
 \definecolor{avans-red}{HTML}{E11F26}
