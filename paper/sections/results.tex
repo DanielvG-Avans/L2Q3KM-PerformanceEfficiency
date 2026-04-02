@@ -40,6 +40,15 @@ The energy distributions were not equally spread across conditions. The SSR dist
 
 Figure~\ref{fig:wireless-energy-distributions} shows the same pattern visually. The \textit{dynamic} scenario still shows substantial overlap between SSR and CSR despite the lower SSR median, whereas the \textit{static} and especially the \textit{massive} scenarios show a clearer separation in favour of SSR. The figure also shows that the main difference is not only the median level, but also the spread of the distributions. SSR remains relatively compact across scenarios, while CSR becomes much more variable as the workload increases, especially in the \textit{massive} scenario. In that condition, several CSR runs reach much higher energy values than the rest of the distribution, suggesting that client-side processing of the larger dataset was not only more energy-intensive in typical runs, but also less stable from run to run. This is one reason why a median-based interpretation is important in this dataset.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\linewidth]{../data/runs/20260401_143839/analysis/plots/energy_by_dataset_size_line.png}
+\caption{Median total energy across the three dataset sizes used in the corrected wireless benchmark: \textit{static} (72 records), \textit{dynamic} (6{,}000 records), and \textit{massive} (24{,}000 records). The x-axis uses these scenario sizes on a log scale. SSR is shown in blue and CSR in red. The gap remains visible across all three scenarios and is widest in the \textit{massive} workload.}
+\label{fig:energy-by-dataset-size-line}
+\end{figure}
+
+Figure~\ref{fig:energy-by-dataset-size-line} summarises the same energy comparison from a workload-growth perspective. It shows that SSR remains lower than CSR at 72, 6{,}000, and 24{,}000 records, with the largest separation appearing in the most data-heavy condition.
+
 \begin{table}[htbp]
 \centering
 \caption{Selected browser and client-resource metrics for the corrected wireless benchmark. Medians are reported with IQR in parentheses.}
