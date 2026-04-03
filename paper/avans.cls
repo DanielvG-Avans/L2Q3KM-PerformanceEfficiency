@@ -44,6 +44,8 @@
 \RequirePackage{etoolbox}
 \RequirePackage[numbers]{natbib}
 \RequirePackage{csquotes}
+\PassOptionsToPackage{hyphens}{url}
+\RequirePackage{xurl}
 \RequirePackage[plainpages=false]{hyperref}
 
 % Brand palette (Avans-inspired)
