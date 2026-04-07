@@ -51,11 +51,11 @@ plt.rcParams.update(
         "figure.dpi": 180,
         "savefig.dpi": 300,
         "font.family": "DejaVu Sans",
-        "axes.titlesize": 19,
-        "axes.labelsize": 14.5,
-        "xtick.labelsize": 12.6,
-        "ytick.labelsize": 12.6,
-        "legend.fontsize": 12.8,
+        "axes.titlesize": 25,
+        "axes.labelsize": 19.5,
+        "xtick.labelsize": 17.2,
+        "ytick.labelsize": 17.2,
+        "legend.fontsize": 18.0,
         "text.color": INK,
         "axes.labelcolor": INK,
         "axes.edgecolor": GRID,
@@ -97,10 +97,10 @@ def save_line_plot(stats_df: pd.DataFrame, output_dir: Path) -> None:
     ssr = energy_df["median_ssr"].to_numpy()
     csr = energy_df["median_csr"].to_numpy()
 
-    fig, ax = plt.subplots(figsize=(9.2, 6.35))
+    fig, ax = plt.subplots(figsize=(10.6, 8.5))
     style_axis(ax)
-    ax.plot(x, ssr, color=SSR_COLOR, marker="o", markersize=11, linewidth=3.35, label="SSR")
-    ax.plot(x, csr, color=CSR_COLOR, marker="o", markersize=11, linewidth=3.35, label="CSR")
+    ax.plot(x, ssr, color=SSR_COLOR, marker="o", markersize=15, linewidth=4.2, label="SSR")
+    ax.plot(x, csr, color=CSR_COLOR, marker="o", markersize=15, linewidth=4.2, label="CSR")
     ax.fill_between(x, ssr, csr, color=ACCENT, alpha=0.42, zorder=0)
 
     ax.set_ylabel("Mediane totale energie (mJ)")
@@ -123,7 +123,7 @@ def save_line_plot(stats_df: pd.DataFrame, output_dir: Path) -> None:
             xytext=(0, 14),
             ha="center",
             color=SSR_COLOR,
-            fontsize=13,
+            fontsize=17,
             weight="bold",
         )
 
@@ -135,7 +135,7 @@ def save_line_plot(stats_df: pd.DataFrame, output_dir: Path) -> None:
             xytext=(0, -20),
             ha="center",
             color=CSR_COLOR,
-            fontsize=13,
+            fontsize=17,
             weight="bold",
         )
 
@@ -215,7 +215,7 @@ def metric_value(stats_df: pd.DataFrame, metric: str, scenario: str, column: str
 
 
 def save_tradeoff_plot(stats_df: pd.DataFrame, output_dir: Path) -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(11.4, 4.5))
+    fig, axes = plt.subplots(1, 3, figsize=(12.4, 6.1))
 
     lcp = [metric_value(stats_df, "LCP — cold load", "dynamic", "median_ssr"), metric_value(stats_df, "LCP — cold load", "dynamic", "median_csr")]
     fcp = [metric_value(stats_df, "FCP — cold load", "dynamic", "median_ssr"), metric_value(stats_df, "FCP — cold load", "dynamic", "median_csr")]
@@ -243,12 +243,12 @@ def save_tradeoff_plot(stats_df: pd.DataFrame, output_dir: Path) -> None:
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.set_ylabel("Tijd (ms)")
-    ax.set_title("Dynamisch: LCP en FCP", loc="left", fontsize=18, pad=12, weight="bold")
+    ax.set_title("Dynamisch: LCP en FCP", loc="left", fontsize=22, pad=14, weight="bold")
     ax.legend(frameon=False, ncol=2, loc="upper left")
     for xpos, value in zip(x + offsets[0], lcp):
-        ax.text(xpos, value + 13, f"{value:.0f}", ha="center", va="bottom", fontsize=11.2, color=SSR_COLOR if xpos < 0.5 else CSR_COLOR)
+        ax.text(xpos, value + 16, f"{value:.0f}", ha="center", va="bottom", fontsize=14.6, color=SSR_COLOR if xpos < 0.5 else CSR_COLOR)
     for xpos, value in zip(x + offsets[1], fcp):
-        ax.text(xpos, value + 13, f"{value:.0f}", ha="center", va="bottom", fontsize=11.2, color="#2A837F" if xpos < 0.5 else "#D16A41")
+        ax.text(xpos, value + 16, f"{value:.0f}", ha="center", va="bottom", fontsize=14.6, color="#2A837F" if xpos < 0.5 else "#D16A41")
 
     ax = axes[1]
     style_axis(ax)
@@ -258,11 +258,11 @@ def save_tradeoff_plot(stats_df: pd.DataFrame, output_dir: Path) -> None:
     ax.set_xticks(x)
     ax.set_xticklabels([SCENARIO_LABELS[s] for s in SCENARIO_ORDER])
     ax.set_ylabel("KB")
-    ax.set_title("Navigatierespons", loc="left", fontsize=18, pad=12, weight="bold")
+    ax.set_title("Navigatierespons", loc="left", fontsize=22, pad=14, weight="bold")
     for xpos, value in zip(x - 0.18, transfer_ssr):
-        ax.text(xpos, value + 0.08, f"{value:.1f}", ha="center", va="bottom", fontsize=11.2, color=SSR_COLOR)
+        ax.text(xpos, value + 0.10, f"{value:.1f}", ha="center", va="bottom", fontsize=14.2, color=SSR_COLOR)
     for xpos, value in zip(x + 0.18, transfer_csr):
-        ax.text(xpos, value + 0.08, f"{value:.1f}", ha="center", va="bottom", fontsize=11.2, color=CSR_COLOR)
+        ax.text(xpos, value + 0.10, f"{value:.1f}", ha="center", va="bottom", fontsize=14.2, color=CSR_COLOR)
 
     ax = axes[2]
     style_axis(ax)
@@ -272,11 +272,11 @@ def save_tradeoff_plot(stats_df: pd.DataFrame, output_dir: Path) -> None:
     ax.set_xticks(x)
     ax.set_xticklabels([SCENARIO_LABELS[s] for s in SCENARIO_ORDER])
     ax.set_ylabel("MB")
-    ax.set_title("JS-heap-sample", loc="left", fontsize=18, pad=12, weight="bold")
+    ax.set_title("JS-heap-sample", loc="left", fontsize=22, pad=14, weight="bold")
     for xpos, value in zip(x - 0.18, heap_ssr):
-        ax.text(xpos, value + 0.12, f"{value:.1f}", ha="center", va="bottom", fontsize=11.2, color=SSR_COLOR)
+        ax.text(xpos, value + 0.15, f"{value:.1f}", ha="center", va="bottom", fontsize=14.2, color=SSR_COLOR)
     for xpos, value in zip(x + 0.18, heap_csr):
-        ax.text(xpos, value + 0.12, f"{value:.1f}", ha="center", va="bottom", fontsize=11.2, color=CSR_COLOR)
+        ax.text(xpos, value + 0.15, f"{value:.1f}", ha="center", va="bottom", fontsize=14.2, color=CSR_COLOR)
 
     fig.tight_layout()
     fig.savefig(output_dir / "browser-tradeoffs.pdf", bbox_inches="tight")
