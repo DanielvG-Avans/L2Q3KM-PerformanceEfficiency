@@ -1,340 +1,424 @@
 \documentclass[final]{beamer}
-\usepackage[size=a1,orientation=portrait,scale=1.18]{beamerposter}
+\usepackage[size=a0,orientation=portrait,scale=1.28]{beamerposter}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[dutch]{babel}
+\usepackage[dutch,english]{babel}
 \usepackage{graphicx}
-\usepackage{ragged2e}
-\usepackage{booktabs}
-\usepackage{tabularx}
 \usepackage{array}
+\usepackage{ragged2e}
 \usepackage{tikz}
-\usepackage[scaled=1.02]{helvet}
+\usepackage{pgfplots}
+\usepackage[sfdefault]{FiraSans}
+
+\graphicspath{{figures/}}
+
 \renewcommand{\familydefault}{\sfdefault}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta,positioning}
 
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{headline}{}
 \setbeamertemplate{footline}{}
-\setbeamercolor{background canvas}{bg=white}
 
-\definecolor{PosterBlue}{HTML}{1F5EA8}
-\definecolor{PosterBlueDark}{HTML}{14324D}
-\definecolor{PosterBlueSoft}{HTML}{E9F5FF}
-\definecolor{PosterCyan}{HTML}{DDF6FF}
-\definecolor{PosterCard}{HTML}{F7FBFF}
-\definecolor{PosterBorder}{HTML}{C8E2F2}
-\definecolor{PosterMuted}{HTML}{5C738A}
-\definecolor{PosterWarm}{HTML}{F0625F}
-\definecolor{PosterWarmSoft}{HTML}{FFF1ED}
+\definecolor{PosterCanvas}{HTML}{FBF0EE}
+\definecolor{PosterWhite}{HTML}{FFFFFF}
+\definecolor{PosterLine}{HTML}{D8DEDE}
+\definecolor{PosterInk}{HTML}{1F2C44}
+\definecolor{PosterMuted}{HTML}{5E6C84}
+\definecolor{HeaderBlue}{HTML}{214F4C}
+\definecolor{HeaderGreenAlt}{HTML}{2F6D68}
+\definecolor{AccentTeal}{HTML}{3C7C93}
+\definecolor{AccentRed}{HTML}{C97E86}
+\definecolor{AccentGold}{HTML}{C3BE6C}
+\definecolor{AccentBlue}{HTML}{DDECF4}
+\definecolor{AccentMint}{HTML}{E6F2ED}
+\definecolor{AccentRose}{HTML}{F6E7E4}
+\definecolor{AccentSoft}{HTML}{F7F5F1}
 
-\setbeamersize{text margin left=1.6cm,text margin right=1.6cm}
+\setbeamercolor{background canvas}{bg=PosterCanvas}
+\setbeamercolor{banner}{fg=white,bg=HeaderBlue}
+\setbeamercolor{hero}{fg=PosterInk,bg=PosterWhite}
 
-\newlength{\PanelPad}
+\setbeamersize{text margin left=1.15cm,text margin right=1.15cm}
+\setlength{\columnsep}{0.72cm}
+
 \newlength{\BlockGap}
-\newlength{\CardPad}
-\setlength{\PanelPad}{0.66cm}
-\setlength{\BlockGap}{0.60cm}
-\setlength{\CardPad}{0.34cm}
+\setlength{\BlockGap}{0.34cm}
 
-\setbeamercolor{panel title}{fg=PosterBlueDark,bg=PosterCyan}
-\setbeamercolor{panel body}{fg=PosterBlueDark,bg=PosterCard}
-\setbeamercolor{title band}{fg=white,bg=PosterBlue}
-\setbeamercolor{hero band}{fg=PosterBlueDark,bg=PosterBlueSoft}
-\setbeamercolor{chip}{fg=PosterBlueDark,bg=white}
-\setbeamercolor{soft card}{fg=PosterBlueDark,bg=white}
-\setbeamercolor{warm card}{fg=PosterBlueDark,bg=PosterWarmSoft}
-\setbeamercolor{closing title}{fg=white,bg=PosterBlueDark}
-\setbeamercolor{closing body}{fg=PosterBlueDark,bg=PosterCyan}
+\newcommand{\PosterTitle}[1]{{\fontsize{80}{85}\selectfont\bfseries #1}}
+\newcommand{\PosterSubtitle}[1]{{\fontsize{30}{34}\selectfont #1}}
+\newcommand{\SectionTitle}[1]{{\fontsize{28}{32}\selectfont\bfseries\MakeUppercase{#1}}}
+\newcommand{\BodyText}[1]{{\fontsize{21.0}{25.8}\selectfont #1}}
+\newcommand{\SmallText}[1]{{\fontsize{16.8}{20.0}\selectfont #1}}
+\newcommand{\TinyText}[1]{{\fontsize{13.2}{15.8}\selectfont #1}}
+\newcommand{\MetaText}[1]{{\fontsize{12.0}{14.2}\selectfont\bfseries\color{PosterMuted}\MakeUppercase{#1}}}
 
-\newenvironment{posterpanel}[1]
+\setbeamertemplate{itemize item}{\color{AccentTeal}\raise0.1em\hbox{\fontsize{14}{14}\selectfont$\blacktriangleright$}}
+
+\newcommand{\PosterBackground}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[PosterCanvas] (current page.south west) rectangle (current page.north east);
+  \end{tikzpicture}%
+}
+
+\newcommand{\tagpill}[2][AccentMint]{%
+  \tikz[baseline=(tag.base)]\node[
+    fill=#1,
+    rounded corners=8pt,
+    inner xsep=10pt,
+    inner ysep=5pt,
+    text=PosterInk,
+    font=\fontsize{12.6}{14.8}\selectfont\bfseries
+  ] (tag) {#2};%
+}
+
+\newcommand{\panelheader}[1]{%
+  \begin{tikzpicture}
+    \path[fill=HeaderBlue] (0,0) rectangle (\linewidth,1.58cm);
+    \path[fill=HeaderGreenAlt] (0.72\linewidth,0) -- (\linewidth,0) -- (\linewidth,1.58cm) -- (0.86\linewidth,1.58cm) -- cycle;
+    \node[anchor=west, text=white, font=\fontsize{22}{25}\selectfont\bfseries] at (0.34cm,0.79cm) {#1};
+  \end{tikzpicture}\par
+}
+
+\newenvironment{panel}[2][PosterWhite]
 {%
-  \begin{beamercolorbox}[wd=\linewidth,leftskip=\PanelPad,rightskip=\PanelPad,sep=0pt]{panel title}
-    \vspace{0.42cm}
-    {\fontsize{24}{27}\selectfont\bfseries #1\par}
-    \vspace{0.36cm}
-  \end{beamercolorbox}
-  \begin{beamercolorbox}[wd=\linewidth,leftskip=\PanelPad,rightskip=\PanelPad,sep=0pt,vmode]{panel body}
-    \vspace{\PanelPad}
+  \setbeamercolor{panelbox}{fg=PosterInk,bg=#1}%
+  \begin{beamercolorbox}[wd=\linewidth,leftskip=0.84cm,rightskip=0.84cm,sep=0pt,rounded=true]{panelbox}
+    \vspace{0.24cm}
+    \panelheader{#2}
+    \vspace{0.16cm}
     \RaggedRight
-    \setlength{\parskip}{0.28cm}
+    \setlength{\parskip}{0.14cm}
 }
 {%
-    \vspace{\PanelPad}
+    \vspace{0.28cm}
   \end{beamercolorbox}
   \vspace{\BlockGap}
 }
 
-\newcommand{\microcopy}[1]{{\fontsize{12.2}{14.2}\selectfont\color{PosterMuted}#1}}
-\newcommand{\leadcopy}[1]{{\fontsize{16.8}{20.2}\selectfont\color{PosterBlueDark}#1}}
-\newcommand{\keyline}[1]{{\fontsize{21.5}{25}\selectfont\bfseries\color{PosterBlueDark}#1}}
-
-\newcommand{\factchip}[2]{%
-  \begin{beamercolorbox}[wd=\linewidth,leftskip=\CardPad,rightskip=\CardPad,sep=0pt]{chip}
-    \vspace{0.24cm}
-    {\fontsize{16.5}{18.8}\selectfont\bfseries #1\par}
-    {\fontsize{12.4}{14.6}\selectfont\color{PosterMuted}#2\par}
-    \vspace{0.22cm}
-  \end{beamercolorbox}
-}
-
-\newcommand{\softcard}[2]{%
-  \begin{beamercolorbox}[wd=\linewidth,leftskip=\CardPad,rightskip=\CardPad,sep=0pt]{soft card}
-    \vspace{0.24cm}
-    {\fontsize{15.2}{17.6}\selectfont\bfseries #1\par}
-    {\fontsize{12.2}{14.4}\selectfont #2\par}
-    \vspace{0.22cm}
-  \end{beamercolorbox}
-}
-
-\newcommand{\warmcard}[2]{%
-  \begin{beamercolorbox}[wd=\linewidth,leftskip=\CardPad,rightskip=\CardPad,sep=0pt]{warm card}
-    \vspace{0.24cm}
-    {\fontsize{15.4}{17.8}\selectfont\bfseries #1\par}
-    {\fontsize{12.2}{14.4}\selectfont #2\par}
-    \vspace{0.22cm}
-  \end{beamercolorbox}
-}
-
-\newcommand{\resultcard}[3]{%
-  \begin{beamercolorbox}[wd=\linewidth,leftskip=\CardPad,rightskip=\CardPad,sep=0pt]{soft card}
-    \vspace{0.22cm}
-    {\fontsize{15}{17.2}\selectfont\bfseries #1\par}
-    {\fontsize{18.8}{21.4}\selectfont\color{PosterBlue}#2\par}
-    {\fontsize{11.8}{13.9}\selectfont\color{PosterMuted}#3\par}
-    \vspace{0.20cm}
-  \end{beamercolorbox}
-}
-
-\newcommand{\tightitems}[1]{%
+\newcommand{\posteritems}[1]{%
   \begin{itemize}
-    \setlength{\itemsep}{0.24cm}
+    \setlength{\itemsep}{0.10cm}
+    \setlength{\leftmargin}{0.76cm}
     \setlength{\parskip}{0pt}
     \setlength{\parsep}{0pt}
     #1
   \end{itemize}
 }
 
-\newcommand{\energymedianfigure}{%
-  \IfFileExists{figures/energy-medians.pdf}{%
-    \includegraphics[width=\linewidth]{figures/energy-medians.pdf}%
-  }{%
-    \includegraphics[width=\linewidth,height=12.5cm,keepaspectratio]{../data/runs/20260401_143839/analysis/plots/energy_by_dataset_size_line.png}%
+\newcommand{\choicebox}[3]{%
+  {%
+    \setbeamercolor{choicepanel}{fg=PosterInk,bg=#1}%
+    \begin{beamercolorbox}[wd=\linewidth,leftskip=0.34cm,rightskip=0.34cm,sep=0pt,rounded=true]{choicepanel}
+      \vspace{0.22cm}
+      {\fontsize{18.2}{21.2}\selectfont\bfseries #2\par}
+      \vspace{0.04cm}
+      \begin{itemize}
+        \setlength{\itemsep}{0.08cm}
+        \setlength{\leftmargin}{0.64cm}
+        \setlength{\parskip}{0pt}
+        \setlength{\parsep}{0pt}
+        #3
+      \end{itemize}
+      \vspace{0.14cm}
+    \end{beamercolorbox}
   }%
 }
 
-\newcommand{\energyspreadfigure}{%
-  \IfFileExists{figures/energy-boxplots.pdf}{%
-    \includegraphics[width=\linewidth]{figures/energy-boxplots.pdf}%
-  }{%
-    \begin{columns}[T,totalwidth=\linewidth]
-      \begin{column}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{../data/runs/20260401_143839/analysis/plots/static_energy_total_mj.png}
-      \end{column}
-      \begin{column}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{../data/runs/20260401_143839/analysis/plots/dynamic_energy_total_mj.png}
-      \end{column}
-      \begin{column}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{../data/runs/20260401_143839/analysis/plots/massive_energy_total_mj.png}
-      \end{column}
-    \end{columns}
+\newcommand{\methodcard}[3]{%
+  \begin{minipage}[t]{\linewidth}
+    \centering
+    \begin{tikzpicture}
+      \draw[draw=HeaderBlue!45, fill=PosterWhite, line width=2.8pt] (0,0) circle (1.18cm);
+      \node[text=HeaderBlue, font=\fontsize{18.4}{20.8}\selectfont\bfseries, align=center] at (0,0) {#1};
+    \end{tikzpicture}
+    \par\vspace{0.12cm}
+    {\fontsize{17.8}{20.6}\selectfont\bfseries #2\par}
+    \vspace{0.03cm}
+    {\fontsize{13.4}{15.8}\selectfont\color{PosterMuted}#3\par}
+  \end{minipage}
+}
+
+\newcommand{\resultrow}[4]{%
+  \begin{columns}[c,totalwidth=\linewidth]
+    \begin{column}{0.28\linewidth}
+      \centering
+      \begin{tikzpicture}
+        \draw[draw=#1, line width=3.6pt] (0,0) circle (1.08cm);
+        \node[text=#1, font=\fontsize{24}{27}\selectfont\bfseries] at (0,0.10) {#2};
+        \node[text=PosterMuted, font=\fontsize{11.2}{12.8}\selectfont] at (0,-0.52) {#3};
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.68\linewidth}
+      \SmallText{#4}
+    \end{column}
+  \end{columns}
+  \vspace{0.16cm}
+}
+
+\newcommand{\statcard}[4]{%
+  {%
+    \setbeamercolor{statbox}{fg=PosterInk,bg=#1}%
+    \begin{beamercolorbox}[wd=\linewidth,leftskip=0.30cm,rightskip=0.30cm,sep=0pt,rounded=true]{statbox}
+      \vspace{0.16cm}
+      {\RaggedRight\fontsize{12.2}{14.0}\selectfont\bfseries\color{PosterMuted}#2\par}
+      {\RaggedRight\fontsize{24.0}{27.4}\selectfont\bfseries #3\par}
+      {\RaggedRight\fontsize{12.2}{14.4}\selectfont\color{PosterMuted}#4\par}
+      \vspace{0.16cm}
+    \end{beamercolorbox}
   }%
 }
 
-\newcommand{\browsertradeofffigure}{%
-  \IfFileExists{figures/browser-tradeoffs.pdf}{%
-    \includegraphics[width=\linewidth]{figures/browser-tradeoffs.pdf}%
-  }{%
-    \begin{columns}[T,totalwidth=\linewidth]
-      \begin{column}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{../data/runs/20260401_143839/analysis/plots/dynamic_lcp_cold_ms.png}
-      \end{column}
-      \begin{column}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{../data/runs/20260401_143839/analysis/plots/dynamic_transfer_kb.png}
-      \end{column}
-      \begin{column}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{../data/runs/20260401_143839/analysis/plots/massive_js_heap_mb.png}
-      \end{column}
-    \end{columns}
-  }%
+\newcommand{\architecturediagram}{%
+  \begin{tikzpicture}[
+    x=1cm,
+    y=1cm,
+    node distance=0.44cm and 0.70cm,
+    every node/.style={font=\fontsize{11.4}{13.6}\selectfont},
+    block/.style={
+      rounded corners=5pt,
+      minimum width=4.4cm,
+      minimum height=1.00cm,
+      align=center,
+      draw=PosterLine,
+      line width=0.9pt,
+      fill=PosterWhite
+    },
+    ssrblock/.style={block, draw=AccentTeal, fill=AccentMint},
+    csrblock/.style={block, draw=AccentRed, fill=AccentRose},
+    arrow/.style={-{Latex[length=2.8mm]}, line width=1.0pt, color=PosterInk}
+  ]
+    \node[font=\fontsize{17}{20}\selectfont\bfseries, text=AccentTeal] at (2.4,5.4) {SSR};
+    \node[font=\fontsize{17}{20}\selectfont\bfseries, text=AccentRed] at (8.4,5.4) {CSR};
+
+    \node[block] (s1) at (2.4,4.35) {Request};
+    \node[ssrblock, below=of s1] (s2) {Server verwerkt data};
+    \node[block, below=of s2] (s3) {HTML klaar voor paint};
+
+    \node[block] (c1) at (8.4,4.35) {Request};
+    \node[block, below=of c1] (c2) {Shell + hydration};
+    \node[csrblock, below=of c2] (c3) {Client verwerkt data};
+
+    \draw[arrow] (s1) -- (s2);
+    \draw[arrow] (s2) -- (s3);
+    \draw[arrow] (c1) -- (c2);
+    \draw[arrow] (c2) -- (c3);
+  \end{tikzpicture}
 }
 
 \begin{document}
 \begin{frame}[t]
+\PosterBackground
 
-\begin{beamercolorbox}[wd=\linewidth,leftskip=1.05cm,rightskip=1.05cm,sep=0pt]{title band}
-  \vspace{1.22cm}
-  {\fontsize{52}{56}\selectfont\bfseries Evaluating SSR and CSR in Next.js\par}
-  \vspace{0.30cm}
-  {\fontsize{23}{27}\selectfont Een vergelijkende studie naar mobiele energie-effici\"entie en client-side resourcegebruik\par}
-  \vspace{0.58cm}
-  {\fontsize{16}{18.6}\selectfont Dani\"el van Ginneken \hfill Avans Hogeschool \hfill Praktijkgericht onderzoek jaar 2 \hfill 2 april 2026\par}
-  \vspace{1.16cm}
-\end{beamercolorbox}
+\vspace{0.54cm}
 
-\vspace{0.56cm}
-
-\begin{beamercolorbox}[wd=\linewidth,leftskip=0.88cm,rightskip=0.88cm,sep=0pt]{hero band}
-  \vspace{0.76cm}
+\begin{beamercolorbox}[wd=\linewidth,leftskip=0.86cm,rightskip=0.86cm,sep=0pt]{banner}
+  \vspace{0.82cm}
   \begin{columns}[T,totalwidth=\linewidth]
-    \begin{column}{0.63\linewidth}
-      {\fontsize{35}{39}\selectfont\bfseries SSR liet in alle drie scenario's een lagere mediane totale energie zien.\par}
-      \vspace{0.24cm}
-      {\fontsize{18.2}{21.5}\selectfont\color{PosterBlueDark}De duidelijkste steun ligt in \textbf{static} en \textbf{massive}; \textbf{dynamic} beweegt in dezelfde richting, maar minder beslissend. De juiste interpretatie is een trade-off, niet universele superioriteit.\par}
+    \begin{column}{0.72\linewidth}
+      {\fontsize{13.6}{15.6}\selectfont\bfseries\color{AccentGold}RESEARCH POSTER\par}
+      \vspace{0.18cm}
+      {\color{white}\PosterTitle{Waar Gebeurt het Werk?}\par}
+      \vspace{0.10cm}
+      {\color{white!96}\PosterSubtitle{SSR vs CSR in een mobiele Next.js benchmark}\par}
+      \vspace{0.18cm}
+      {\fontsize{17.8}{20.6}\selectfont\color{white!90}Dani\"el van Ginneken\textsuperscript{1}\par}
+      {\fontsize{15.4}{18.0}\selectfont\color{white!84}\textsuperscript{1}Avans Hogeschool, Performance Efficiency\par}
     \end{column}
-    \begin{column}{0.34\linewidth}
-      \begin{columns}[T,totalwidth=\linewidth]
-        \begin{column}{0.49\linewidth}
-          \factchip{Dataset}{\texttt{20260401\_143839}}
-        \end{column}
-        \begin{column}{0.49\linewidth}
-          \factchip{Runs}{60 totaal, 10 per paar}
-        \end{column}
-      \end{columns}
-      \vspace{0.22cm}
-      \begin{columns}[T,totalwidth=\linewidth]
-        \begin{column}{0.49\linewidth}
-          \factchip{Validatie}{60/60 battery-valid}
-        \end{column}
-        \begin{column}{0.49\linewidth}
-          \factchip{Temperatuur}{25.1--26.1$^\circ$C}
-        \end{column}
-      \end{columns}
+    \begin{column}{0.24\linewidth}
+      \begin{beamercolorbox}[wd=\linewidth,leftskip=0.34cm,rightskip=0.34cm,sep=0pt,rounded=true]{hero}
+        \vspace{0.24cm}
+        {\fontsize{18.2}{21.0}\selectfont\bfseries Dani\"el van Ginneken\par}
+        \vspace{0.04cm}
+        {\fontsize{14.2}{16.8}\selectfont Avans Hogeschool\par}
+        {\fontsize{14.2}{16.8}\selectfont Performance Efficiency\par}
+        {\fontsize{14.2}{16.8}\selectfont April 2026\par}
+        \vspace{0.10cm}
+        {\fontsize{12.6}{14.8}\selectfont\color{PosterMuted}Benchmark: Samsung Galaxy A53, battery-powered runs\par}
+        \vspace{0.24cm}
+      \end{beamercolorbox}
     \end{column}
   \end{columns}
-  \vspace{0.76cm}
+  \vspace{0.82cm}
 \end{beamercolorbox}
 
-\vspace{0.58cm}
+\vspace{0.22cm}
 
-\begin{columns}[T,totalwidth=\textwidth]
-  \begin{column}{0.27\textwidth}
-    \begin{posterpanel}{Inleiding}
-      \leadcopy{Veel vergelijkingen tussen SSR en CSR richten zich op snelheid, SEO of ontwikkelgemak. Deze studie verschuift de focus naar mobiel client-side resourcegebruik binnen een gecontroleerde Next.js-opzet.}
+\begin{beamercolorbox}[wd=\linewidth,leftskip=0.86cm,rightskip=0.86cm,sep=0pt,rounded=true]{hero}
+  \vspace{0.24cm}
+  \begin{columns}[T,totalwidth=\linewidth]
+    \begin{column}{0.62\linewidth}
+      \MetaText{Kerninzicht}\par
+      \vspace{0.05cm}
+      {\fontsize{34}{39}\selectfont\bfseries SSR is de betere default wanneer client-side energie centraal staat.\par}
+      \vspace{0.06cm}
+      \BodyText{Binnen dezelfde Next.js-benchmark lag de mediane totale client-side energie in alle drie workloads lager bij SSR.}
+    \end{column}
+    \begin{column}{0.34\linewidth}
+      \tagpill[AccentMint]{zelfde storefront}\hspace{0.10cm}
+      \tagpill[AccentBlue]{60 valide runs}\hspace{0.10cm}
+      \tagpill[AccentRose]{Galaxy A53}
+      \vspace{0.14cm}
+      \SmallText{\textbf{Nuance:} in de dynamische workload gaf \textbf{CSR} lagere \textbf{LCP/FCP}, terwijl \textbf{SSR} over de volledige run zuiniger bleef.}
+    \end{column}
+  \end{columns}
+  \vspace{0.20cm}
+\end{beamercolorbox}
 
-      \tightitems{
-        \item E\'en gedeelde storefront-prototype hield interface, stack en interacties constant.
-        \item Het centrale verschil was waar de hoofdverwerking plaatsvond: op de server of in de browser.
-        \item Naast energie zijn ook browser-side indicatoren meegenomen om de uitkomst te duiden.
-      }
-    \end{posterpanel}
+\vspace{0.18cm}
 
-    \begin{posterpanel}{Onderzoeksvraag}
-      {\fontsize{18.6}{22}\selectfont\bfseries Hoe be\"invloedt de keuze tussen SSR en CSR de mobiele client-side energie en geselecteerde browser-side metriek in een vergelijkbare Next.js-webapplicatie?\par}
-
-      \microcopy{Werkinterpretatie: niet zoeken naar een absolute winnaar, maar naar een verdedigbare afweging tussen vroege browserprestatie en totale client-side effici\"entie.}
-    \end{posterpanel}
-
-    \begin{posterpanel}{Methodologie}
-      \begin{columns}[T,totalwidth=\linewidth]
-        \begin{column}{0.49\linewidth}
-          \softcard{SSR-pad}{Server verwerkt filteren, sorteren, pagineren en samenvatten v\'o\'or aflevering van de pagina.}
-        \end{column}
-        \begin{column}{0.49\linewidth}
-          \softcard{CSR-pad}{Browser hydrateert eerst, haalt ruwe inventory op en voert dezelfde verwerkingsstap lokaal uit.}
-        \end{column}
-      \end{columns}
-
-      \vspace{0.24cm}
-
-      \begin{columns}[T,totalwidth=\linewidth]
-        \begin{column}{0.32\linewidth}
-          \factchip{Scenario's}{static, dynamic, massive}
-        \end{column}
-        \begin{column}{0.32\linewidth}
-          \factchip{Condities}{SSR en CSR}
-        \end{column}
-        \begin{column}{0.32\linewidth}
-          \factchip{Herhalingen}{10 per conditie-scenario}
-        \end{column}
-      \end{columns}
-
-      \vspace{0.24cm}
-
-      \tightitems{
-        \item Metingen: batterij-afgeleide totale energie, LCP, FCP, TTFB, navigatierespons en JS-heap-sample.
-        \item Medians en IQR waren leidend door zichtbare outliers; vergelijking per scenario via Mann-Whitney U.
-        \item Interpretatiedrempel: Bonferroni-gecorrigeerde $\alpha = 0.0019$.
-      }
-    \end{posterpanel}
+\begin{columns}[T,totalwidth=\linewidth]
+  \begin{column}{0.30\linewidth}
+    \begin{panel}[AccentBlue]{Introductie}
+      \BodyText{Veel SSR/CSR-vergelijkingen focussen op \textbf{snelheid} en \textbf{UX}, maar veel minder op wat het \textbf{device} zelf moet doen.}
+      \vspace{0.08cm}
+      \SmallText{Deze studie vergelijkt twee functioneel gelijke Next.js-varianten en meet energie, browser-metrics en geheugen op een echt mobiel toestel.}
+      \vspace{0.08cm}
+      \MetaText{Hoofdvraag}\par
+      \SmallText{Wat verandert er op het device wanneer dezelfde app via \textbf{SSR} of \textbf{CSR} wordt gerenderd?}
+    \end{panel}
   \end{column}
-
-  \begin{column}{0.45\textwidth}
-    \begin{posterpanel}{Energieresultaten}
-      \keyline{SSR bleef in static, dynamic en massive onder CSR op mediane totale energie.}
-
-      \microcopy{De gecorrigeerde wireless benchmark gebruikte dezelfde drie scenario's, twee rendercondities en 60 batterij-valide runs. De lijnfiguur toont het mediane patroon; de verdelingsfiguur laat zien waar de spreiding en outliers optreden.}
-
+  \begin{column}{0.36\linewidth}
+    \begin{panel}{Architectuur}
+      \SmallText{Zelfde storefront, zelfde interacties; alleen de locatie van het zware werk verschuift van server naar browser of terug.}
       \vspace{0.18cm}
-      \energymedianfigure
-
-      \vspace{0.26cm}
-
-      \begin{columns}[T,totalwidth=\linewidth]
-        \begin{column}{0.32\linewidth}
-          \resultcard{Statisch}{5743 vs 7960 mJ}{Duidelijke steun voor SSR}
-        \end{column}
-        \begin{column}{0.32\linewidth}
-          \resultcard{Dynamisch}{6372 vs 7040 mJ}{Richting SSR, minder beslissend}
-        \end{column}
-        \begin{column}{0.32\linewidth}
-          \resultcard{Massief}{5770 vs 9048 mJ}{Grootste afstand en meeste CSR-spreiding}
-        \end{column}
-      \end{columns}
-
-      \vspace{0.26cm}
-      \energyspreadfigure
-
-      \microcopy{Binnen massive is de CSR-verdeling veel breder, met hoge energiepieken. Dat ondersteunt de keuze om medians centraal te zetten in plaats van gemiddelden; de verdelingsfiguur gebruikt daarom een schaal per paneel.}
-    \end{posterpanel}
+      \centering
+      \resizebox{0.92\linewidth}{!}{\architecturediagram}
+    \end{panel}
   \end{column}
-
-  \begin{column}{0.27\textwidth}
-    \begin{posterpanel}{Browser-side trade-offs}
-      \leadcopy{De browsermetriek volgde geen eenduidige winnaar. Sommige vroege laadindicatoren vielen gunstiger uit voor CSR, terwijl SSR minder client-side belasting vroeg zodra de workload groeide.}
-
-      \vspace{0.16cm}
-      \browsertradeofffigure
-
-      \tightitems{
-        \item CSR had in alle scenario's een kleinere navigatierespons; dit betreft alleen de initi\"ele documentrespons.
-        \item In dynamic lagen LCP en FCP lager bij CSR dan bij SSR.
-        \item In massive lag het JS-heap-sample hoger bij CSR dan bij SSR.
-        \item Betere vroege browsermetriek betekende in deze prototype dus niet automatisch lagere totale mobiele energie.
+  \begin{column}{0.30\linewidth}
+    \begin{panel}[AccentBlue]{Doel en Benchmark}
+      \posteritems{
+        \item \textbf{Hypothese:} SSR verlaagt totale client-side cost; CSR kan sterker blijven in vroege browser-respons
+        \item \textbf{Prototype:} e\'en Next.js-app met twee functioneel vergelijkbare renderpaden
+        \item \textbf{Workloads:} 72, 6.000 en 24.000 records
+        \item \textbf{Device:} Samsung Galaxy A53, battery-powered metingen
       }
-    \end{posterpanel}
-
-    \begin{posterpanel}{Beperkingen}
-      \tightitems{
-        \item De conclusies steunen op \'e\'en battery-powered wireless benchmark op een Samsung Galaxy A53.
-        \item Energie is afgeleid uit batterijstroom en spanning via polling, niet uit hardware power rails.
-        \item Navigatierespons is geen volledige CSR-datatransfer; het JS-heap-cijfer is een post-load sample, geen sessiepiek.
-        \item Verdere generalisatie vraagt meer apparaten, workloads en meetopstellingen.
-      }
-    \end{posterpanel}
+    \end{panel}
   \end{column}
 \end{columns}
 
-\vfill
+\begin{columns}[T,totalwidth=\linewidth]
+  \begin{column}{0.64\linewidth}
+    \begin{panel}[AccentBlue]{Methodologie}
+      \begin{columns}[T,totalwidth=\linewidth]
+        \begin{column}{0.24\linewidth}
+          \methodcard{1 app}{Zelfde prototype}{zelfde UI, andere verwerkingslocatie}
+        \end{column}
+        \begin{column}{0.24\linewidth}
+          \methodcard{60}{Valide runs}{10 per conditie met cooldown en reset}
+        \end{column}
+        \begin{column}{0.24\linewidth}
+          \methodcard{mJ}{Median / IQR}{U-test met Bonferroni-correctie}
+        \end{column}
+        \begin{column}{0.24\linewidth}
+          \methodcard{A53}{Echt device}{Samsung Galaxy A53, batterijgedreven}
+        \end{column}
+      \end{columns}
+      \vspace{0.18cm}
+      \SmallText{Doel was een gecontroleerde vergelijking waarin niet de interface, maar alleen de plaats van de verwerking verandert. Daardoor is het verschil in device-cost beter te interpreteren.}
+    \end{panel}
+  \end{column}
+  \begin{column}{0.32\linewidth}
+    \begin{panel}{Resultaten}
+      \resultrow{AccentTeal}{-28\%}{Statisch}{\textbf{SSR 5743 mJ} versus \textbf{CSR 7960 mJ} bij dezelfde UI en lage workload.}
+      \resultrow{HeaderBlue}{-9.5\%}{Dynamisch}{\textbf{SSR 6372 mJ} versus \textbf{CSR 7040 mJ}; kleinste marge, zelfde richting.}
+      \resultrow{AccentRed}{-36\%}{Massief}{\textbf{SSR 5770 mJ} versus \textbf{CSR 9048 mJ}; grootste verschil in zware workload.}
+      \SmallText{\textbf{Patroon:} hoe meer werk op het device terechtkomt, hoe duidelijker het energievoordeel van \textbf{SSR} wordt.}
+    \end{panel}
+  \end{column}
+\end{columns}
 
-\begin{beamercolorbox}[wd=\linewidth,leftskip=0.92cm,rightskip=0.92cm,sep=0pt]{closing title}
-  \vspace{0.38cm}
-  {\fontsize{24}{27}\selectfont\bfseries Conclusie\par}
-  \vspace{0.28cm}
-\end{beamercolorbox}
-\begin{beamercolorbox}[wd=\linewidth,leftskip=0.92cm,rightskip=0.92cm,sep=0pt,vmode]{closing body}
-  \vspace{0.56cm}
+\begin{columns}[T,totalwidth=\linewidth]
+  \begin{column}{0.58\linewidth}
+    \begin{panel}{Totale energie per scenario}
+      \SmallText{De centrale lijnfiguur laat zien dat \textbf{SSR} in alle drie scenario's lager uitkomt op mediane totale client-side energie dan \textbf{CSR}.}
+      \vspace{0.14cm}
+      \includegraphics[width=\linewidth]{energy-medians.pdf}
+    \end{panel}
+  \end{column}
+  \begin{column}{0.38\linewidth}
+    \begin{panel}[AccentBlue]{Browser-Metrics en Geheugen}
+      \SmallText{De browserzijde blijft genuanceerder: \textbf{CSR} kan eerder responsief ogen, terwijl \textbf{SSR} het totale device-werk lager houdt.}
+      \vspace{0.12cm}
+      \includegraphics[width=\linewidth]{browser-tradeoffs.pdf}
+      \vspace{0.08cm}
+      \posteritems{
+        \item \textbf{CSR} liet in \textbf{Dynamic} lagere \textbf{LCP/FCP} zien
+        \item \textbf{SSR} hield de \textbf{JS-heap} lager in de zwaarste workload
+        \item Een grotere navigatierespons bij \textbf{SSR} komt door server-rendered HTML
+      }
+    \end{panel}
+  \end{column}
+\end{columns}
+
+\begin{columns}[T,totalwidth=\linewidth]
+  \begin{column}{0.64\linewidth}
+    \begin{panel}[AccentMint]{Discussie en Keuzehulp}
+      \BodyText{Er is geen universele winnaar. Binnen deze benchmark is \textbf{SSR} de betere default als \textbf{lage client-side energie}, lagere memory en totale device-cost centraal staan.}
+      \vspace{0.10cm}
+      \begin{columns}[T,totalwidth=\linewidth]
+        \begin{column}{0.48\linewidth}
+          \choicebox{PosterWhite}{Kies SSR als}{
+            \item mobiele energy efficiency de hoofdconstraint is
+            \item workloads groeien in volume of complexiteit
+            \item lagere client memory en totale cost belangrijk zijn
+          }
+        \end{column}
+        \begin{column}{0.48\linewidth}
+          \choicebox{AccentBlue}{Kies CSR als}{
+            \item shell-first gedrag zwaarder weegt
+            \item client-side flexibiliteit belangrijker is dan totale energie
+            \item je de trade-off op echte devices expliciet hebt gevalideerd
+          }
+        \end{column}
+      \end{columns}
+      \vspace{0.10cm}
+      \SmallText{\textbf{Praktijkregel:} vergelijk renderstrategieën niet alleen op gevoel van snelheid; combineer energie, geheugen en timing in dezelfde evaluatie.}
+    \end{panel}
+  \end{column}
+  \begin{column}{0.32\linewidth}
+    \begin{panel}{Bijdrage en Vervolg}
+      \BodyText{Veel SSR/CSR-literatuur focust op latency en UX. Deze benchmark voegt daar een expliciete \textbf{mobile energy lens} aan toe in een gecontroleerde Next.js-vergelijking.}
+      \vspace{0.12cm}
+      \begin{columns}[T,totalwidth=\linewidth]
+        \begin{column}{0.48\linewidth}
+          \statcard{AccentBlue}{Literatuurpatroon}{SSR helpt vaker}{bij zwaardere pagina's en datasets}
+        \end{column}
+        \begin{column}{0.48\linewidth}
+          \statcard{AccentMint}{Nieuwe bijdrage}{Battery-powered}{client-side energy als primaire uitkomst}
+        \end{column}
+      \end{columns}
+      \vspace{0.12cm}
+      \posteritems{
+        \item herhaal op meerdere toestellen en netwerkcondities
+        \item voeg hardware-based power measurement toe waar mogelijk
+        \item controleer of het patroon buiten het prototype standhoudt
+      }
+    \end{panel}
+  \end{column}
+\end{columns}
+
+\begin{beamercolorbox}[wd=\linewidth,leftskip=0.86cm,rightskip=0.86cm,sep=0pt,rounded=true]{hero}
+  \vspace{0.24cm}
   \begin{columns}[T,totalwidth=\linewidth]
-    \begin{column}{0.62\linewidth}
-      {\fontsize{25.4}{29.5}\selectfont\bfseries Binnen deze Next.js-prototype was SSR het energiezuinigste pad voor mobiel client-side gebruik, vooral in static en massive. CSR behield tegelijk specifieke voordelen in browser-side metriek. De keuze tussen beide strategie\"en is daarom een afweging tussen vroege browserprestatie en totale client-side effici\"entie.\par}
+    \begin{column}{0.60\linewidth}
+      \MetaText{Laatste Takeaway}\par
+      \vspace{0.04cm}
+      {\fontsize{30}{34}\selectfont\bfseries Meet energie, niet alleen perceived speed.\par}
+      \vspace{0.05cm}
+      \SmallText{De renderstrategie die sneller aanvoelt, is niet automatisch de renderstrategie die het device het minst belast.}
     \end{column}
-    \begin{column}{0.34\linewidth}
-      \warmcard{Wat dit posterresultaat zegt}{SSR was hier sterker op totale energie; CSR bleef relevant op initi\"ele browsermetriek.}
-      \vspace{0.22cm}
-      \softcard{Wat het niet zegt}{De studie ondersteunt geen universele superioriteit van SSR of CSR buiten deze gecontroleerde opzet.}
+    \begin{column}{0.16\linewidth}
+      \statcard{AccentMint}{Beste default}{SSR}{als batterij en device-cost centraal staan}
+    \end{column}
+    \begin{column}{0.20\linewidth}
+      \MetaText{Context}\par
+      \TinyText{Prototype: zelfde storefront, andere verwerkingslocatie. Device: Samsung Galaxy A53. Datasets: 72, 6.000 en 24.000 records. Bronbasis: introductie, methoden, resultaten, discussie en aanbevelingen uit het paper.}
     \end{column}
   \end{columns}
-  \vspace{0.56cm}
+  \vspace{0.22cm}
 \end{beamercolorbox}
 
 \end{frame}
