@@ -11,6 +11,7 @@ Mijn onderzoek vergelijkt SSR en CSR in dezelfde Next.js-app. Niet alleen op sne
 - Veel vergelijkingen tussen SSR en CSR focussen op latency en UX.
 - Minder studies meten expliciet client-side energie op een smartphone.
 - Dat is de research gap die ik heb onderzocht.
+- Kort gezegd: we weten vaak wat snel voelt, maar minder goed wat het toestel zelf moet doen.
 
 ## 3) Onderzoeksvraag (20-30 sec)
 
@@ -31,6 +32,7 @@ Kernpatroon: SSR had in alle workloads lagere totale client-side energie.
 Concreet voorbeeld:
 
 - Massief scenario: SSR 5770 mJ vs CSR 9048 mJ (ongeveer 36% lager bij SSR).
+- Dus: dezelfde app kan functioneel gelijk zijn, maar toch veel meer van de telefoon vragen.
 
 Nuance:
 
@@ -49,6 +51,7 @@ Aanbevelingen:
 - Kies SSR bij zwaardere workloads en als energie-efficiency centraal staat.
 - Kies CSR als shell-first gedrag en client-flexibiliteit zwaarder wegen.
 - Vergelijk niet alleen op gevoel van snelheid, maar combineer energie, geheugen en timing.
+- Vertel dit in gewone taal: "sneller voelen" en "zuiniger zijn" zijn niet automatisch hetzelfde.
 
 ## 7) Vervolgonderzoek + discussie openen (30-45 sec)
 
