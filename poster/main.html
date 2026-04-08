@@ -12,7 +12,7 @@
 
   :root {
     --ink: #122034;
-    --ink-soft: #425066;
+    --ink-soft: #39495f;
     --canvas: #f6efe7;
     --paper: #fffdfa;
     --white: #ffffff;
@@ -104,8 +104,8 @@
   }
 
   .rail-subtitle {
-    font-size: 15px;
-    line-height: 1.34;
+    font-size: 14px;
+    line-height: 1.42;
     color: rgba(255, 255, 255, 0.8);
   }
 
@@ -133,16 +133,16 @@
   }
 
   .thesis-copy {
-    font-size: 17px;
-    line-height: 1.24;
+    font-size: 16px;
+    line-height: 1.22;
     font-weight: 800;
   }
 
   .thesis-note,
   .rail-copy {
     margin-top: 7px;
-    font-size: 11px;
-    line-height: 1.34;
+    font-size: 11.5px;
+    line-height: 1.36;
     color: rgba(255, 255, 255, 0.76);
   }
 
@@ -227,7 +227,7 @@
     height: 100%;
     min-height: 0;
     display: grid;
-    grid-template-rows: 180px 1fr;
+    grid-template-rows: 204px 1fr;
     gap: 16px;
   }
 
@@ -249,7 +249,7 @@
   .side-stack {
     min-height: 0;
     display: grid;
-    grid-template-rows: 170px 116px 1fr;
+    grid-template-rows: 148px 1fr;
     gap: 16px;
   }
 
@@ -294,9 +294,9 @@
   }
 
   .card-head h2 {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 900;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
@@ -307,24 +307,24 @@
   }
 
   .eyebrow {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 900;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #76849a;
     margin-bottom: 4px;
   }
 
   .lede {
-    font-size: 16px;
-    line-height: 1.25;
+    font-size: 17px;
+    line-height: 1.18;
     font-weight: 800;
     color: var(--ink);
   }
 
   .copy {
-    font-size: 11px;
-    line-height: 1.34;
+    font-size: 12px;
+    line-height: 1.36;
     color: var(--ink-soft);
   }
 
@@ -354,20 +354,20 @@
 
   .story-main .copy,
   .story-side .copy {
-    font-size: 10px;
-    line-height: 1.28;
+    font-size: 11px;
+    line-height: 1.32;
   }
 
   .methods-layout {
     height: 100%;
     display: grid;
-    grid-template-rows: auto 1fr auto;
-    gap: 9px;
+    grid-template-rows: auto 1fr;
+    gap: 10px;
   }
 
   .methods-summary {
-    font-size: 12px;
-    line-height: 1.28;
+    font-size: 13px;
+    line-height: 1.3;
     font-weight: 700;
     color: var(--ink);
   }
@@ -412,26 +412,16 @@
   }
 
   .method-title {
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.18;
     font-weight: 900;
     color: var(--ink);
   }
 
   .method-note {
-    font-size: 9px;
-    line-height: 1.2;
-    color: var(--ink-soft);
-  }
-
-  .method-foot {
-    padding: 9px 10px;
-    border-radius: 16px;
-    background: linear-gradient(180deg, #fff9ee, #fef1d0);
-    border: 1px solid rgba(184, 155, 69, 0.24);
     font-size: 10px;
-    line-height: 1.28;
-    color: #5d5331;
+    line-height: 1.24;
+    color: var(--ink-soft);
   }
 
   .results-layout {
@@ -442,23 +432,11 @@
   }
 
   .results-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    align-items: end;
-  }
-
-  .results-top .lede {
-    max-width: 520px;
+    display: block;
   }
 
   .results-kicker {
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--avans-red);
-    white-space: nowrap;
+    display: none;
   }
 
   .result-grid {
@@ -503,7 +481,7 @@
 
   .result-note {
     margin-top: 4px;
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.24;
     color: var(--ink-soft);
   }
@@ -572,7 +550,7 @@
     position: relative;
     padding-left: 14px;
     margin-bottom: 5px;
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.28;
     color: var(--ink-soft);
   }
@@ -594,66 +572,58 @@
   }
 
   .arch-copy {
-    font-size: 10px;
-    line-height: 1.24;
+    font-size: 11px;
+    line-height: 1.28;
     color: var(--ink-soft);
   }
 
-  .arch-grid {
+  .pipeline-grid {
     min-height: 0;
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 6px;
   }
 
-  .arch-side {
-    padding: 7px 8px;
-    border-radius: 16px;
-    border: 1px solid var(--line);
-    background: linear-gradient(180deg, #ffffff, #fafcfd);
-    text-align: center;
+  .pipeline-row {
+    display: grid;
+    grid-template-columns: 46px 1fr 1fr 1fr;
+    gap: 6px;
+    align-items: center;
   }
 
-  .arch-side h4 {
+  .pipe-label {
     font-family: Georgia, "Times New Roman", serif;
     font-size: 14px;
     line-height: 1;
-    margin-bottom: 4px;
+    text-align: center;
   }
 
-  .arch-side .ssr {
+  .pipe-label.ssr {
     color: var(--teal);
   }
 
-  .arch-side .csr {
+  .pipe-label.csr {
     color: var(--rose);
   }
 
-  .arch-flow {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 3px;
-  }
-
-  .arch-node {
-    padding: 5px 6px;
-    border-radius: 11px;
+  .pipe-step {
+    padding: 7px 6px;
+    border-radius: 999px;
     border: 1px solid var(--line-strong);
     background: white;
-    font-size: 8px;
+    font-size: 9px;
     line-height: 1.15;
     font-weight: 900;
     color: var(--ink);
     text-align: center;
   }
 
-  .arch-node.accent-teal {
+  .pipe-step.teal {
     background: var(--teal-soft);
     color: var(--teal);
     border-color: rgba(31, 107, 101, 0.24);
   }
 
-  .arch-node.accent-rose {
+  .pipe-step.rose {
     background: var(--rose-soft);
     color: #96454f;
     border-color: rgba(201, 120, 130, 0.24);
@@ -673,19 +643,21 @@
     border: 1px solid var(--line);
     background: linear-gradient(180deg, #ffffff, #fbfcfd);
     display: grid;
-    grid-template-rows: auto 1fr auto;
-    gap: 6px;
-  }
-
-  .evidence-card .figure {
-    min-height: 0;
-    height: 54px;
+    align-content: start;
+    gap: 4px;
   }
 
   .evidence-copy {
-    font-size: 10px;
+    font-size: 10.5px;
     line-height: 1.25;
     color: var(--ink-soft);
+  }
+
+  .evidence-strong {
+    font-size: 15px;
+    line-height: 1.14;
+    font-weight: 800;
+    color: var(--ink);
   }
 
   .conclusion-layout {
@@ -693,6 +665,7 @@
     display: grid;
     grid-template-columns: 1.05fr 0.95fr;
     gap: 10px;
+    align-content: start;
   }
 
   .conclusion-col {
@@ -700,6 +673,10 @@
     display: grid;
     align-content: start;
     gap: 8px;
+  }
+
+  .conclusion-col.right {
+    grid-template-rows: auto 1fr;
   }
 
   .recommend-grid {
@@ -735,7 +712,7 @@
 
   .recommend-card li {
     margin-bottom: 3px;
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.2;
     color: var(--ink-soft);
   }
@@ -752,6 +729,9 @@
     background: linear-gradient(180deg, #fffdf8, #fef1d0);
     border-color: rgba(184, 155, 69, 0.24);
     color: #5d5331;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .future-box ul {
@@ -763,7 +743,7 @@
     position: relative;
     padding-left: 13px;
     margin-bottom: 4px;
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.24;
     color: var(--ink-soft);
   }
@@ -778,9 +758,53 @@
   }
 
   .tiny {
-    font-size: 10px;
-    line-height: 1.28;
+    font-size: 11px;
+    line-height: 1.3;
     color: var(--ink-soft);
+  }
+
+  .closing-banner {
+    grid-column: 1 / -1;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: linear-gradient(100deg, var(--navy) 0%, #254060 62%, var(--teal) 100%);
+    color: white;
+    display: grid;
+    grid-template-columns: 148px 1fr;
+    gap: 14px;
+    align-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .closing-badge {
+    padding: 12px 10px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
+    text-align: center;
+  }
+
+  .closing-badge-label {
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.74);
+    margin-bottom: 4px;
+  }
+
+  .closing-badge-value {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 34px;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+  }
+
+  .closing-copy {
+    font-size: 15px;
+    line-height: 1.24;
+    font-weight: 700;
+    color: rgba(255,255,255,0.94);
   }
 </style>
 </head>
@@ -791,41 +815,36 @@
 
       <div class="rail-title">Waar Gebeurt<br>het Werk?</div>
 
-      <div class="rail-subtitle">SSR versus CSR in een mobiele Next.js-benchmark, bekeken vanuit energie, geheugen en de echte cost op het device.</div>
+      <div class="rail-subtitle">SSR versus CSR in een mobiele Next.js-benchmark, bekeken vanuit energie en echte device-cost.</div>
 
       <section class="thesis-card">
         <div class="rail-label">Kerninzicht</div>
-        <div class="thesis-copy">SSR is in deze benchmark de betere default zodra <strong>batterij</strong>, <strong>geheugen</strong> en <strong>totale device-cost</strong> serieus meetellen.</div>
-        <div class="thesis-note">Nuance: in de dynamische workload gaf <strong>CSR</strong> lagere vroege LCP/FCP, terwijl <strong>SSR</strong> over de hele run zuiniger bleef.</div>
+        <div class="thesis-copy">SSR is hier de betere default als <strong>batterij</strong>, <strong>geheugen</strong> en <strong>device-cost</strong> echt meetellen.</div>
+        <div class="thesis-note">Nuance: in Dynamic voelde <strong>CSR</strong> eerder sneller, maar <strong>SSR</strong> bleef over de hele run zuiniger.</div>
       </section>
 
       <section class="rail-card">
         <div class="author-name">Daniël van Ginneken</div>
         <div class="author-meta">Avans Hogeschool<br>Performance Efficiency · April 2026</div>
-        <div class="rail-copy"><strong>Benchmark:</strong> Samsung Galaxy A53, battery-powered runs, drie workloadgroottes, zelfde storefront, twee renderpaden.</div>
+        <div class="rail-copy"><strong>Benchmark:</strong> Galaxy A53, battery-powered runs, drie workloads, zelfde storefront.</div>
       </section>
 
       <section class="rail-card">
-        <div class="rail-label">Onderzoeksopzet in één oogopslag</div>
+        <div class="rail-label">Onderzoeksopzet</div>
         <div class="chip-row">
           <div class="chip teal">60 valide runs</div>
           <div class="chip gold">Galaxy A53</div>
           <div class="chip red">72 / 6.000 / 24.000 records</div>
           <div class="chip teal">Zelfde prototype</div>
         </div>
-        <ul class="rail-list">
-          <li>Niet alleen “wat voelt snel?”, maar ook “wat kost het toestel?”</li>
-          <li>Doelgroep: zowel technische als niet-technische toehoorders.</li>
-          <li>Hoofdboodschap: sneller voelen en zuiniger zijn zijn niet automatisch hetzelfde.</li>
-        </ul>
       </section>
 
       <section class="rail-card">
         <div class="rail-label">Openingsvraag voor discussie</div>
-        <div class="rail-copy">Als een app sneller voelt, maar meer batterij vraagt van het device, welke keuze is dan in jouw context de juiste?</div>
+        <div class="rail-copy">Wat weegt zwaarder: een snelle eerste indruk of lagere totale device-cost?</div>
       </section>
 
-      <div class="rail-footer">Posterstructuur: introductie, eerder onderzoek, research gap, methodes, resultaten, conclusie, aanbevelingen en vervolgonderzoek.</div>
+      <div class="rail-footer">Introductie, research gap, methode, resultaten, conclusie en vervolgonderzoek in één slide.</div>
     </aside>
 
     <section class="stage">
@@ -838,24 +857,19 @@
           <div class="card-body">
             <div class="story-layout">
               <div class="story-main">
-                <div class="lede">Veel SSR/CSR-vergelijkingen focussen op snelheid en UX. Deze studie kijkt juist naar wat het <strong>device</strong> zelf moet doen.</div>
-                <div class="copy">Twee functioneel gelijke Next.js-varianten zijn vergeleken op een echte smartphone. De focus ligt op energie, browser-metrics en geheugen samen.</div>
+                <div class="lede">De meeste SSR/CSR-vergelijkingen kijken naar snelheid. Deze studie kijkt naar wat het <strong>device</strong> zelf moet doen.</div>
+                <div class="copy">Twee functioneel gelijke Next.js-varianten zijn vergeleken op een echte smartphone, met energie, browser-metrics en geheugen als gecombineerde uitkomst.</div>
               </div>
 
               <div class="story-side">
                 <div class="story-unit">
                   <div class="eyebrow">Eerder onderzoek</div>
-                  <div class="copy">Literatuur suggereert dat <strong>SSR</strong> sterker wordt bij zwaardere pagina’s, terwijl <strong>CSR</strong> aantrekkelijk blijft voor shell-first gedrag.</div>
+                  <div class="copy"><strong>SSR</strong> helpt vaker bij zwaardere pagina’s; <strong>CSR</strong> blijft interessant voor shell-first gedrag.</div>
                 </div>
 
                 <div class="story-unit">
-                  <div class="eyebrow">Research gap</div>
-                  <div class="copy">Mobiele client-side energie is zelden de primaire uitkomst in gecontroleerde SSR/CSR-vergelijkingen.</div>
-                </div>
-
-                <div class="story-unit">
-                  <div class="eyebrow">Onderzoeksvraag</div>
-                  <div class="copy">Wat verandert er op het device wanneer dezelfde app via <strong>SSR</strong> of <strong>CSR</strong> wordt gerenderd?</div>
+                  <div class="eyebrow">Research gap + onderzoeksvraag</div>
+                  <div class="copy">Mobiele client-side energie is zelden de hoofd-uitkomst. Vraag: wat verandert er op het device tussen <strong>SSR</strong> en <strong>CSR</strong>?</div>
                 </div>
               </div>
             </div>
@@ -869,7 +883,7 @@
           </div>
           <div class="card-body">
             <div class="methods-layout">
-              <div class="methods-summary">De vergelijking is strak gehouden: één app, twee renderpaden, drie workloads en metingen op een echt toestel.</div>
+              <div class="methods-summary">Eén app, twee renderpaden en metingen op een echt toestel.</div>
 
               <div class="method-grid">
                 <div class="method-tile teal">
@@ -877,35 +891,19 @@
                     <div class="method-badge">1</div>
                     <div class="method-title">Zelfde prototype</div>
                   </div>
-                  <div class="method-note">Zelfde UI, andere verwerkingslocatie.</div>
+                  <div class="method-note">Zelfde UI, andere verwerking.</div>
                 </div>
 
                 <div class="method-tile">
                   <div class="method-top">
                     <div class="method-badge">60</div>
-                    <div class="method-title">Valide runs</div>
+                    <div class="method-title">Runs op A53</div>
                   </div>
-                  <div class="method-note">Tien per conditie, met reset.</div>
-                </div>
-
-                <div class="method-tile">
-                  <div class="method-top">
-                    <div class="method-badge">3</div>
-                    <div class="method-title">Workloads</div>
-                  </div>
-                  <div class="method-note">72, 6.000 en 24.000 records.</div>
-                </div>
-
-                <div class="method-tile teal">
-                  <div class="method-top">
-                    <div class="method-badge">A53</div>
-                    <div class="method-title">Echt device</div>
-                  </div>
-                  <div class="method-note">Samsung Galaxy A53.</div>
+                  <div class="method-note">3 workloads + median/IQR.</div>
                 </div>
               </div>
 
-              <div class="method-foot"><strong>Analyse:</strong> median/IQR en U-test met Bonferroni-correctie, zodat het patroon minder afhankelijk is van uitschieters.</div>
+              <div class="copy">Analyse: U-test met Bonferroni-correctie.</div>
             </div>
           </div>
         </article>
@@ -921,7 +919,6 @@
             <div class="results-layout">
               <div class="results-top">
                 <div class="lede">SSR verbruikte in alle drie scenario’s minder totale client-side energie dan CSR.</div>
-                <div class="results-kicker">Resultaten met visuele ondersteuning</div>
               </div>
 
               <div class="result-grid">
@@ -951,14 +948,14 @@
                   <div class="focus-card red">
                     <div class="eyebrow">Concreet voorbeeld</div>
                     <div class="focus-big">9048 vs 5770 mJ</div>
-                    <div class="copy">In de zwaarste workload kostte <strong>CSR</strong> veel meer energie dan <strong>SSR</strong>, terwijl het nog steeds om dezelfde app ging.</div>
+                    <div class="copy">In de zwaarste workload kostte <strong>CSR</strong> veel meer energie dan <strong>SSR</strong>, bij dezelfde app.</div>
                   </div>
 
                   <div class="focus-card gold">
                     <div class="eyebrow">Wat dit betekent</div>
                     <ul class="bullet-list">
-                      <li>Hoe meer werk de client zelf moet doen, hoe duidelijker SSR wint op totale device-cost.</li>
-                      <li>De beste eerste indruk is niet automatisch de zuinigste keuze over de hele run.</li>
+                      <li>Meer clientwerk maakt het energievoordeel van SSR groter.</li>
+                      <li>De snelste eerste indruk is niet altijd de zuinigste keuze.</li>
                     </ul>
                   </div>
                 </div>
@@ -975,48 +972,22 @@
             </div>
             <div class="card-body">
               <div class="arch-layout">
-                <div class="arch-copy">Zelfde interface en controls; alleen de plek van het zware werk verschuift.</div>
+                <div class="arch-copy">Zelfde interface; alleen de plek van de verwerking verschuift.</div>
 
-                <div class="arch-grid">
-                  <div class="arch-side">
-                    <h4 class="ssr">SSR</h4>
-                    <div class="arch-flow">
-                      <div class="arch-node">Request</div>
-                      <div class="arch-node accent-teal">Server verwerkt data</div>
-                      <div class="arch-node">HTML klaar voor paint</div>
-                    </div>
+                <div class="pipeline-grid">
+                  <div class="pipeline-row">
+                    <div class="pipe-label ssr">SSR</div>
+                    <div class="pipe-step">Request</div>
+                    <div class="pipe-step teal">Server verwerkt</div>
+                    <div class="pipe-step">HTML klaar</div>
                   </div>
 
-                  <div class="arch-side">
-                    <h4 class="csr">CSR</h4>
-                    <div class="arch-flow">
-                      <div class="arch-node">Request</div>
-                      <div class="arch-node">Shell + hydration</div>
-                      <div class="arch-node accent-rose">Client verwerkt data</div>
-                    </div>
+                  <div class="pipeline-row">
+                    <div class="pipe-label csr">CSR</div>
+                    <div class="pipe-step">Request</div>
+                    <div class="pipe-step">Shell + hydration</div>
+                    <div class="pipe-step rose">Client verwerkt</div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="card">
-            <div class="card-head">
-              <div class="card-index">05</div>
-              <h2>Nuance in de resultaten</h2>
-            </div>
-            <div class="card-body">
-              <div class="evidence-layout">
-                <div class="evidence-card">
-                  <div class="eyebrow">Browser-metrics & geheugen</div>
-                  <img class="figure" src="figures/browser-tradeoffs.png" alt="Browser-metrics en geheugenverschillen tussen SSR en CSR">
-                  <div class="evidence-copy"><strong>CSR</strong> won op vroege LCP/FCP in Dynamic, maar <strong>SSR</strong> bleef vaak lichter in memory en totale cost.</div>
-                </div>
-
-                <div class="evidence-card">
-                  <div class="eyebrow">Spreiding per workload</div>
-                  <img class="figure" src="figures/energy-boxplots.png" alt="Boxplots van energieverbruik per workload">
-                  <div class="evidence-copy">In Massief wordt het verschil niet alleen groter, maar ook consistenter.</div>
                 </div>
               </div>
             </div>
@@ -1024,7 +995,7 @@
 
           <article class="card">
             <div class="card-head gold">
-              <div class="card-index">06</div>
+              <div class="card-index">05</div>
               <h2>Conclusie, aanbevelingen & vervolg</h2>
             </div>
             <div class="card-body">
@@ -1032,7 +1003,12 @@
                 <div class="conclusion-col">
                   <div>
                     <div class="eyebrow">Conclusie</div>
-                    <div class="copy"><strong>SSR</strong> is in deze benchmark de betere default wanneer lage client-side energie, lager geheugenverbruik en lagere totale device-cost centraal staan.</div>
+                    <div class="copy"><strong>SSR</strong> is hier de beste default wanneer lage client-side energie en device-cost centraal staan.</div>
+                  </div>
+
+                  <div class="future-box">
+                    <div class="eyebrow">Belangrijke nuance</div>
+                    <div class="tiny"><strong>CSR</strong> voelde in Dynamic eerder snel, maar <strong>SSR</strong> bleef zuiniger over de hele run.</div>
                   </div>
 
                   <div class="recommend-grid">
@@ -1040,7 +1016,6 @@
                       <div class="recommend-title">Kies SSR als</div>
                       <ul>
                         <li>batterij en device-cost zwaar wegen</li>
-                        <li>workloads groeien in volume of complexiteit</li>
                       </ul>
                     </div>
 
@@ -1048,26 +1023,31 @@
                       <div class="recommend-title">Kies CSR als</div>
                       <ul>
                         <li>shell-first gedrag belangrijker is</li>
-                        <li>de trade-off al op echte devices is gevalideerd</li>
                       </ul>
                     </div>
                   </div>
                 </div>
 
-                <div class="conclusion-col">
+                <div class="conclusion-col right">
                   <div class="future-box">
                     <div class="eyebrow">Vervolgonderzoek</div>
                     <ul>
                       <li>Herhaal op meerdere devices en netwerken.</li>
-                      <li>Voeg hardware-based power measurement toe waar mogelijk.</li>
-                      <li>Controleer of het patroon buiten dit prototype standhoudt.</li>
                     </ul>
                   </div>
 
                   <div class="discussion-box">
                     <div class="eyebrow">Discussie openen</div>
-                    <div class="tiny">Wanneer zou jij kiezen voor een snellere eerste paint, ook als de totale device-cost hoger uitvalt?</div>
+                    <div class="tiny">Wanneer kies jij voor een snellere eerste paint, ook als de totale device-cost hoger uitvalt?</div>
                   </div>
+                </div>
+
+                <div class="closing-banner">
+                  <div class="closing-badge">
+                    <div class="closing-badge-label">Beste Default</div>
+                    <div class="closing-badge-value">SSR</div>
+                  </div>
+                  <div class="closing-copy">Meet niet alleen wat snel voelt. Meet ook wat het device echt kost.</div>
                 </div>
               </div>
             </div>

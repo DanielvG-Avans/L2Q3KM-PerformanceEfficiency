@@ -1,76 +1,84 @@
-# Posterpresentatie - Talk Track (4-6 min)
+# Posterpresentatie - Talk Track (4-5 min)
 
-## 1) Opening (20-30 sec)
+## 1) Opening (20 sec)
 
-"Welke renderstrategie voelt sneller, en welke is echt zuiniger op je telefoon?"
+"Wat voelt sneller op je telefoon, en wat is uiteindelijk zuiniger?"
 
-Mijn onderzoek vergelijkt SSR en CSR in dezelfde Next.js-app. Niet alleen op snelheid, maar vooral op energieverbruik op een echt mobiel device.
+Mijn onderzoek vergelijkt SSR en CSR in dezelfde Next.js-app. Niet alleen op snelheid, maar vooral op wat het device zelf moet doen.
 
-## 2) Introductie + eerder onderzoek (40-60 sec)
+## 2) Introductie + eerder onderzoek (35-45 sec)
 
-- Veel vergelijkingen tussen SSR en CSR focussen op latency en UX.
-- Minder studies meten expliciet client-side energie op een smartphone.
-- Dat is de research gap die ik heb onderzocht.
-- Kort gezegd: we weten vaak wat snel voelt, maar minder goed wat het toestel zelf moet doen.
+- Veel SSR/CSR-vergelijkingen kijken vooral naar latency en UX.
+- Minder onderzoek kijkt naar client-side energie op een echte smartphone.
+- Eerder onderzoek suggereert dat SSR sterker wordt bij zwaardere pagina's, terwijl CSR aantrekkelijk blijft voor shell-first gedrag.
+- Dat is precies de research gap van deze poster.
 
-## 3) Onderzoeksvraag (20-30 sec)
+## 3) Onderzoeksvraag (15-20 sec)
 
 Onderzoeksvraag:
-Wat verandert er in energie, timing en geheugen op het device wanneer dezelfde app via SSR of CSR wordt gerenderd?
 
-## 4) Methode (45-60 sec)
+"Wat verandert er op het device tussen SSR en CSR?"
 
-- Zelfde storefront, zelfde interacties, alleen renderlocatie verandert.
-- 60 valide runs in totaal, verdeeld over statisch, dynamisch en massief.
-- Device: Samsung Galaxy A53, batterijgedreven metingen.
+Concreet bedoel ik: energie, timing en geheugen.
+
+## 4) Methode (35-45 sec)
+
+- Eén prototype, twee renderpaden.
+- Zelfde storefront en interacties, alleen de verwerkingslocatie verandert.
+- 60 valide runs op een Samsung Galaxy A53.
+- Drie workloads: 72, 6.000 en 24.000 records.
 - Analyse met median/IQR en U-test met Bonferroni-correctie.
 
-## 5) Resultaten met concrete voorbeelden (60-90 sec)
+## 5) Resultaten (60-75 sec)
 
-Kernpatroon: SSR had in alle workloads lagere totale client-side energie.
+Kernpatroon:
+
+- SSR gebruikte in alle drie scenario's minder totale client-side energie dan CSR.
 
 Concreet voorbeeld:
 
-- Massief scenario: SSR 5770 mJ vs CSR 9048 mJ (ongeveer 36% lager bij SSR).
+- In het massieve scenario zat SSR op 5770 mJ en CSR op 9048 mJ.
 - Dus: dezelfde app kan functioneel gelijk zijn, maar toch veel meer van de telefoon vragen.
 
 Nuance:
 
-- In de dynamische workload liet CSR lagere vroege LCP/FCP zien.
-- Toch bleef SSR over de hele run zuiniger en vaak lichter in memory.
+- In de dynamische workload voelde CSR eerder snel.
+- Maar over de hele run bleef SSR zuiniger.
+
+Zin voor niet-technisch publiek:
+
+"Sneller voelen en zuiniger zijn zijn niet automatisch hetzelfde."
 
 ## 6) Conclusie + aanbevelingen (45-60 sec)
 
 Conclusie:
 
-- Er is geen universele winnaar.
-- Als batterij en totale device-cost belangrijk zijn, is SSR in deze benchmark de beste default.
+- Binnen deze benchmark is SSR de beste default wanneer batterij en device-cost centraal staan.
 
 Aanbevelingen:
 
-- Kies SSR bij zwaardere workloads en als energie-efficiency centraal staat.
-- Kies CSR als shell-first gedrag en client-flexibiliteit zwaarder wegen.
-- Vergelijk niet alleen op gevoel van snelheid, maar combineer energie, geheugen en timing.
-- Vertel dit in gewone taal: "sneller voelen" en "zuiniger zijn" zijn niet automatisch hetzelfde.
+- Kies SSR als energie-efficiency belangrijk is of workloads zwaarder worden.
+- Kies CSR als shell-first gedrag belangrijker is.
+- Maak renderkeuzes niet op gevoel alleen; combineer energie, geheugen en timing.
 
-## 7) Vervolgonderzoek + discussie openen (30-45 sec)
+## 7) Vervolg + discussie openen (20-30 sec)
 
 Vervolg:
 
-- Herhalen op meerdere devices en netwerken.
-- Waar mogelijk hardware-based power measurement toevoegen.
-- Controleren of het patroon ook buiten dit prototype standhoudt.
+- Herhaal op meerdere devices en netwerken.
+- Voeg waar mogelijk hardware-based power measurement toe.
 
-Discussievraag aan publiek:
-"Wanneer zou jij in jouw context kiezen voor snellere eerste paint, ook als de totale device-cost hoger uitvalt?"
+Discussievraag:
+
+"Wanneer kies jij voor een snellere eerste indruk, ook als de totale device-cost hoger uitvalt?"
 
 ## Korte Q&A cheat sheet
 
-Vraag: "Betekent dit dat SSR altijd beter is?"
-Antwoord: Nee. Voor vroege perceptie kan CSR gunstig zijn. Het hangt af van je prioriteit: eerste indruk of totale device-efficiency.
+Vraag: "Is SSR dan altijd beter?"
+Antwoord: Nee. Voor vroege perceptie kan CSR aantrekkelijk zijn. Het hangt af van je prioriteit.
 
-Vraag: "Waarom op een echt toestel meten?"
-Antwoord: Omdat energie- en geheugengedrag op echte hardware vaak afwijkt van desktop/lab-indicaties.
+Vraag: "Waarom meten op een echt toestel?"
+Antwoord: Omdat energie- en geheugengedrag op echte hardware vaak anders uitvalt dan op desktop of in een lab.
 
 Vraag: "Wat is je belangrijkste praktijkadvies?"
-Antwoord: Maak renderkeuzes op gecombineerde metrics: energie + geheugen + timing, niet op 1 metric.
+Antwoord: Meet niet alleen perceived speed. Meet ook wat het device echt kost.
