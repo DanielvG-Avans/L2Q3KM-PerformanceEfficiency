@@ -29,7 +29,7 @@ fi
   --allow-file-access-from-files \
   --run-all-compositor-stages-before-draw \
   --virtual-time-budget=2000 \
-  --window-size=2384,3370 \
+  --window-size=1920,1080 \
   --screenshot="${PREVIEW_FILE}" \
   "file://${HTML_FILE}" >/dev/null 2>&1
 
@@ -39,6 +39,7 @@ fi
   --allow-file-access-from-files \
   --run-all-compositor-stages-before-draw \
   --virtual-time-budget=2000 \
+  --window-size=1920,1080 \
   --print-to-pdf-no-header \
   --print-to-pdf="${PDF_FILE}" \
   "file://${HTML_FILE}" >/dev/null 2>&1
