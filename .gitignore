@@ -71,6 +71,8 @@ temp
 # =========================================================
 paper/*.log
 paper/*.pdf
+poster/*.log
+poster/*.pdf
 *.aux
 *.bbl
 *.bcf
@@ -99,4 +101,4 @@ paper/*.pdf
 !*.jpg
 !*.jpeg
 !*.svg
-!*.pdf
+!docs/*.pdf
