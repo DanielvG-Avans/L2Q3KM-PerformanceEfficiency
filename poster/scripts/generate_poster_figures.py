@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Dutch poster figures for the A1 beamerposter."""
+"""Generate Dutch figures for the HTML poster workflow."""
 
 from __future__ import annotations
 
@@ -81,8 +81,11 @@ def load_statistics(path: Path) -> pd.DataFrame:
 
 
 def load_energy_runs(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path)
-    return df[df["battery_energy_valid"] == True].copy()
+    df = pd.read_csv(path, true_values=["True"], false_values=["False"])
+    valid_energy = df["battery_energy_valid"]
+    if valid_energy.dtype != bool:
+        valid_energy = valid_energy.astype(str).str.lower().eq("true")
+    return df[valid_energy.fillna(False)].copy()
 
 
 def save_line_plot(stats_df: pd.DataFrame, output_dir: Path) -> None:
